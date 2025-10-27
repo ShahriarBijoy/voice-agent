@@ -7,9 +7,9 @@ export default function Home() {
   return (
     <SidebarProvider defaultOpen={false}>
       <AppSidebar collapsible="dock" intent="inset" />
-      <SidebarInset className="flex flex-col h-screen">
+      <SidebarInset className="flex h-[98vh] flex-col overflow-hidden">
         <AppSidebarNav />
-        <div className="flex-1 overflow-hidden p-6 lg:p-6 min-h-0 ">
+        <div className="min-h-0 flex-1 overflow-hidden p-4 lg:p-6">
           <VoiceChat />
         </div>
       </SidebarInset>

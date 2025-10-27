@@ -48,6 +48,7 @@ export function VoiceChat() {
   const [selectedMicDevice, setSelectedMicDevice] = useState<string>("")
   const [savedConversationId, setSavedConversationId] = useState<string | undefined>()
   const [idleTimeoutWarning, setIdleTimeoutWarning] = useState<boolean>(false)
+  const [assistantStream, setAssistantStream] = useState<string>("")
 
   const wsRef = useRef<VoiceAgentWebSocket | null>(null)
   const audioProcessorRef = useRef<AudioProcessor | null>(null)
@@ -160,6 +161,7 @@ export function VoiceChat() {
         case "ready":
           console.log("Voice agent ready")
           setAgentState("listening")
+          setRecordingState(RecordingState.RECORDING)
           break
         case "transcript":
           if (message.text) {
@@ -175,11 +177,27 @@ export function VoiceChat() {
             addMessage("user", message.text)
             setRecordingState(RecordingState.PROCESSING)
             setAgentState("thinking")
+            setAssistantStream("")
+          }
+          break
+        case "assistant_chunk":
+          if (message.text) {
+            setAssistantStream((prev) => prev + message.text)
+            setAgentState("talking")
+          }
+          break
+        case "assistant_message":
+          if (message.text) {
+            setAssistantStream("")
+            addMessage("assistant", message.text)
+            setAgentState("listening")
+            setRecordingState(RecordingState.RECORDING)
           }
           break
         case "tts_complete":
           // Don't change recording state - keep the session active
           setAgentState("listening")
+          setRecordingState(RecordingState.RECORDING)
           break
         case "error":
           console.error("Error:", message.message)
@@ -245,7 +263,7 @@ export function VoiceChat() {
       if (!audioProcessorRef.current || !audioProcessorRef.current.isRecording()) {
         console.log("[VoiceChat] Initializing audio processor...")
         audioProcessorRef.current = new AudioProcessor()
-        await audioProcessorRef.current.initialize(ws)
+        await audioProcessorRef.current.initialize(ws, selectedMicDevice)
         console.log("[VoiceChat] Audio processor initialized")
       }
       
@@ -366,7 +384,7 @@ export function VoiceChat() {
 
       {/* Messages Container */}
       <div className="flex-1 overflow-hidden">
-        <Conversation className="h-full">
+        <Conversation className="h-full" >
           <ConversationContent className="flex min-w-0 flex-col gap-4 p-6">
             {!hasStarted ? (
               <div className="flex h-full items-center justify-center">
@@ -396,6 +414,14 @@ export function VoiceChat() {
                   <div className="text-muted-foreground text-sm italic">
                     &ldquo;{currentTranscript}&rdquo;
                   </div>
+                )}
+                {assistantStream && (
+                  <MessageComponent
+                    key="assistant-stream"
+                    content={assistantStream}
+                    source="ai"
+                    avatar="AI"
+                  />
                 )}
               </>
             )}

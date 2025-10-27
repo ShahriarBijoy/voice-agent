@@ -11,7 +11,6 @@ import {
   DocumentTextIcon as DocumentTextSolid,
   HomeIcon as HomeSolid,
   LifebuoyIcon as LifebuoySolid,
-  ArchiveBoxIcon as ArchiveBoxSolid,
   QuestionMarkCircleIcon as QuestionMarkCircleSolid,
   ArrowLeftStartOnRectangleIcon as ArrowRightOnRectangleSolid,
 } from "@heroicons/react/24/solid"
@@ -72,25 +71,14 @@ export default function AppSidebar(props: React.ComponentProps<typeof Sidebar>) 
               <ChatBubbleLeftRightSolid />
               <SidebarLabel>Conversation</SidebarLabel>
             </SidebarItem>
+
+            <SidebarItem href="/history" tooltip="History" isCurrent={pathname === "/history"}>
+              <ClockSolid />
+              <SidebarLabel>History</SidebarLabel>
+            </SidebarItem>
           </SidebarSection>
 
-          <SidebarDisclosureGroup defaultExpandedKeys={[1]}>
-            <SidebarDisclosure id={1}>
-              <SidebarDisclosureTrigger>
-                <ClockSolid />
-                <SidebarLabel>History</SidebarLabel>
-              </SidebarDisclosureTrigger>
-              <SidebarDisclosurePanel>
-                <SidebarItem href="/history" tooltip="Recent" isCurrent={pathname === "/history"}>
-                  <ClockSolid />
-                  <SidebarLabel>Recent</SidebarLabel>
-                </SidebarItem>
-                <SidebarItem href="/history" tooltip="Archived">
-                  <ArchiveBoxSolid />
-                  <SidebarLabel>Archived</SidebarLabel>
-                </SidebarItem>
-              </SidebarDisclosurePanel>
-            </SidebarDisclosure>
+          <SidebarDisclosureGroup defaultExpandedKeys={[2]}>
             <SidebarDisclosure id={2}>
               <SidebarDisclosureTrigger>
                 <DocumentTextSolid />

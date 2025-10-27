@@ -74,8 +74,11 @@ class SonioxSTTService:
     async def finalize(self):
         """Signal end of audio stream"""
         if self.ws and self.is_connected:
-            # Send empty string to signal end-of-audio to Soniox
-            await self.ws.send("")
+            try:
+                # Send empty string to signal end-of-audio to Soniox
+                await self.ws.send("")
+            except Exception as exc:
+                print(f"Failed to finalize STT stream: {exc}")
 
     async def close(self):
         """Close WebSocket connection"""

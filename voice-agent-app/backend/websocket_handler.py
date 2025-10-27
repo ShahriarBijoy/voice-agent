@@ -1,5 +1,6 @@
 import asyncio
 import json
+from typing import Optional
 from fastapi import WebSocket, WebSocketDisconnect
 from services.stt_service import SonioxSTTService
 from services.llm_service import LLMService
@@ -16,6 +17,9 @@ class VoiceAgentWebSocket:
         self.tts_service = VogentTTSService()
         self.conversation = ConversationManager()
         self.is_processing = False
+        self.shutdown_event = asyncio.Event()
+        self.conversation_saved = False
+        self.last_conversation_id: Optional[str] = None
 
     async def handle_connection(self):
         """Main WebSocket connection handler"""
@@ -23,6 +27,10 @@ class VoiceAgentWebSocket:
         print("WebSocket connection established")
         
         try:
+            receive_task = None
+            stt_task = None
+            tts_task = None
+
             # Initialize services
             try:
                 await self.stt_service.connect()
@@ -33,7 +41,7 @@ class VoiceAgentWebSocket:
                     "message": f"STT service unavailable: {str(e)}"
                 })
                 return
-            
+
             try:
                 await self.tts_service.connect()
             except Exception as e:
@@ -43,44 +51,48 @@ class VoiceAgentWebSocket:
                     "message": f"TTS service unavailable: {str(e)}"
                 })
                 return
-            
+
             # Send ready message
             await self.websocket.send_json({
                 "type": "ready",
                 "message": "Voice agent ready"
             })
-            
-            # Start receiving tasks
-            receive_task = asyncio.create_task(self.receive_loop())
-            stt_task = asyncio.create_task(self.stt_loop())
-            tts_task = asyncio.create_task(self.tts_loop())
-            
-            # Wait for any task to complete
-            done, pending = await asyncio.wait(
-                [receive_task, stt_task, tts_task],
-                return_when=asyncio.FIRST_COMPLETED
-            )
-            
-            # Cancel remaining tasks
-            for task in pending:
-                task.cancel()
-                
+
+            # Start service tasks
+            receive_task = asyncio.create_task(self.receive_loop(), name="receive_loop")
+            stt_task = asyncio.create_task(self.stt_loop(), name="stt_loop")
+            tts_task = asyncio.create_task(self.tts_loop(), name="tts_loop")
+
+            # Wait until shutdown is signaled
+            await self.shutdown_event.wait()
+
         except WebSocketDisconnect:
             print("Client disconnected")
-            # Save conversation before cleanup
-            await self.save_conversation_and_notify()
+            self.signal_shutdown()
         except Exception as e:
             print(f"WebSocket error: {e}")
             import traceback
             traceback.print_exc()
             # Save conversation before cleanup
             await self.save_conversation_and_notify()
+            self.signal_shutdown()
         finally:
+            # Ensure shutdown event is set to stop background tasks
+            self.signal_shutdown()
+
+            tasks = [task for task in (receive_task, stt_task, tts_task) if task is not None]
+            for task in tasks:
+                task.cancel()
+
+            if tasks:
+                await asyncio.gather(*tasks, return_exceptions=True)
+
+            await self.save_conversation_and_notify()
             await self.cleanup()
 
     async def receive_loop(self):
         """Receive messages from client"""
-        while True:
+        while not self.shutdown_event.is_set():
             try:
                 message = await self.websocket.receive()
                 
@@ -103,16 +115,19 @@ class VoiceAgentWebSocket:
                         # Manual disconnect - save conversation and close
                         print("Manual disconnect requested")
                         await self.save_conversation_and_notify()
+                        self.signal_shutdown()
                         break
             except Exception as e:
                 print(f"Receive error: {e}")
+                await self.save_conversation_and_notify()
+                self.signal_shutdown()
                 break
 
     async def stt_loop(self):
         """Process STT results - matches Soniox official example"""
         final_tokens = []  # Accumulate final tokens
-        
-        while True:
+
+        while not self.shutdown_event.is_set():
             try:
                 result = await self.stt_service.receive_transcript()
                 
@@ -191,6 +206,8 @@ class VoiceAgentWebSocket:
                 # Check if session is finished
                 if result.get("finished"):
                     print("Session finished.")
+                    final_tokens = []
+                    self.signal_shutdown()
                     break
                     
             except Exception as e:
@@ -199,6 +216,9 @@ class VoiceAgentWebSocket:
                 traceback.print_exc()
                 # Wait and continue
                 await asyncio.sleep(1)
+                if not self.shutdown_event.is_set():
+                    continue
+                break
 
     async def process_user_input(self, text: str):
         """Process user input through LLM and TTS"""
@@ -260,7 +280,7 @@ class VoiceAgentWebSocket:
 
     async def tts_loop(self):
         """Receive and forward TTS audio"""
-        while True:
+        while not self.shutdown_event.is_set():
             try:
                 result = await self.tts_service.receive_audio()
                 if result:
@@ -293,10 +313,18 @@ class VoiceAgentWebSocket:
                 await asyncio.sleep(0.5)
                 continue
 
+            if self.shutdown_event.is_set():
+                break
+
     async def save_conversation_and_notify(self):
         """Save conversation and notify client if possible"""
+        if self.conversation_saved:
+            return self.last_conversation_id
+
         conversation_id = self.conversation.save_conversation()
         if conversation_id:
+            self.conversation_saved = True
+            self.last_conversation_id = conversation_id
             print(f"Conversation saved with ID: {conversation_id}")
             try:
                 # Check if WebSocket is still open before sending
@@ -312,6 +340,11 @@ class VoiceAgentWebSocket:
             except Exception as e:
                 print(f"Failed to send conversation_saved message: {e}")
         return conversation_id
+
+    def signal_shutdown(self):
+        """Signal background tasks to shut down"""
+        if not self.shutdown_event.is_set():
+            self.shutdown_event.set()
 
     async def cleanup(self):
         """Clean up resources"""

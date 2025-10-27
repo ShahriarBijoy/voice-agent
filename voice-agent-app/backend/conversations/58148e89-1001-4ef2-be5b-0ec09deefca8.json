@@ -1,0 +1,38 @@
+{
+  "id": "58148e89-1001-4ef2-be5b-0ec09deefca8",
+  "title": "Hei, hello! How are you? This is a test.",
+  "created_at": "2025-10-27T16:48:54.330903",
+  "updated_at": "2025-10-27T16:48:54.330903",
+  "messages": [
+    {
+      "role": "user",
+      "content": "Hei, hello! How are you? This is a test.",
+      "timestamp": "2025-10-27T16:48:14.811711"
+    },
+    {
+      "role": "assistant",
+      "content": "Hi there! I'm here and ready to help. How can I assist you today?",
+      "timestamp": "2025-10-27T16:48:16.207488"
+    },
+    {
+      "role": "user",
+      "content": "Uh, I'm just testing my session limit",
+      "timestamp": "2025-10-27T16:48:29.884492"
+    },
+    {
+      "role": "assistant",
+      "content": "Got it! Let me know if there's anything specific you'd like to try out or need help with.",
+      "timestamp": "2025-10-27T16:48:32.249502"
+    },
+    {
+      "role": "user",
+      "content": "No, I'm just testing the conversation.",
+      "timestamp": "2025-10-27T16:48:42.103022"
+    },
+    {
+      "role": "assistant",
+      "content": "That's perfectly fine. Feel free to continue testing, and I'm here if you need anything.",
+      "timestamp": "2025-10-27T16:48:45.967417"
+    }
+  ]
+}

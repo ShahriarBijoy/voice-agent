@@ -69,12 +69,26 @@ class ConversationManager:
                 title = msg.content.strip()[:50] + "..." if len(msg.content.strip()) > 50 else msg.content.strip()
                 break
         
+        existing_path = os.path.join(self.conversations_dir, f"{self.conversation_id}.json")
+        created_at = None
+        # Preserve original created_at if file already exists
+        if os.path.exists(existing_path):
+            try:
+                with open(existing_path, 'r', encoding='utf-8') as existing_file:
+                    existing_data = json.load(existing_file)
+                    created_at = existing_data.get("created_at")
+            except Exception as exc:
+                print(f"Failed to read existing conversation file: {exc}")
+
+        now = datetime.now()
         conversation = Conversation(
             id=self.conversation_id,
             messages=self.messages.copy(),
+            created_at=datetime.fromisoformat(created_at) if created_at else now,
+            updated_at=now,
             title=title
         )
-        
+
         # Save to file
         file_path = os.path.join(self.conversations_dir, f"{self.conversation_id}.json")
         with open(file_path, 'w', encoding='utf-8') as f:

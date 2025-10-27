@@ -2,8 +2,12 @@ from fastapi import FastAPI, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
 from config import settings
 from websocket_handler import VoiceAgentWebSocket
+from api.conversations import router as conversations_router
 
 app = FastAPI(title="Voice Agent API")
+
+# Include routers
+app.include_router(conversations_router, prefix="/api", tags=["conversations"])
 
 # CORS middleware
 app.add_middleware(
