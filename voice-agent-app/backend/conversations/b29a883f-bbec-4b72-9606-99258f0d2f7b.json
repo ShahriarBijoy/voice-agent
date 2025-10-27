@@ -1,0 +1,38 @@
+{
+  "id": "b29a883f-bbec-4b72-9606-99258f0d2f7b",
+  "title": "Hey, this is a test.",
+  "created_at": "2025-10-27T18:16:53.439867",
+  "updated_at": "2025-10-27T18:16:53.439867",
+  "messages": [
+    {
+      "role": "user",
+      "content": "Hey, this is a test.",
+      "timestamp": "2025-10-27T18:16:19.849784"
+    },
+    {
+      "role": "assistant",
+      "content": "Hello! It sounds like everything's working on my end. How can I assist you today?",
+      "timestamp": "2025-10-27T18:16:22.788520"
+    },
+    {
+      "role": "user",
+      "content": "I'm just testing out the session ID.",
+      "timestamp": "2025-10-27T18:16:32.931096"
+    },
+    {
+      "role": "assistant",
+      "content": "Got it. Let me know if there's anything else you want to try out or if you have any questions.",
+      "timestamp": "2025-10-27T18:16:34.039247"
+    },
+    {
+      "role": "user",
+      "content": "If it works or not.",
+      "timestamp": "2025-10-27T18:16:34.479398"
+    },
+    {
+      "role": "assistant",
+      "content": "I can't check session IDs directly, but if you can interact with me, that's a good sign things are working. If you have any issues, you might want to check your connection or settings.",
+      "timestamp": "2025-10-27T18:16:35.913144"
+    }
+  ]
+}

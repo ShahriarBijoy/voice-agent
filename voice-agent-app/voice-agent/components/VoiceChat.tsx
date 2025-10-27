@@ -22,8 +22,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-import { Toaster } from "@/components/ui/use-toast"
-import { SessionSavedNotification } from "@/components/ui/session-saved-notification"
+import { showSessionSavedToast } from "@/components/ui/session-saved-notification"
 import {
   Message as MessageType,
   ConnectionState,
@@ -46,7 +45,6 @@ export function VoiceChat() {
   const [isMuted, setIsMuted] = useState(false)
   const [agentState, setAgentState] = useState<AgentState>(null)
   const [selectedMicDevice, setSelectedMicDevice] = useState<string>("")
-  const [savedConversationId, setSavedConversationId] = useState<string | undefined>()
   const [idleTimeoutWarning, setIdleTimeoutWarning] = useState<boolean>(false)
   const [assistantStream, setAssistantStream] = useState<string>("")
 
@@ -143,12 +141,30 @@ export function VoiceChat() {
   const addMessage = useCallback(
     (role: "user" | "assistant", content: string) => {
       const message: MessageType = {
-        id: Date.now().toString(),
+        id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
         role,
         content,
         timestamp: new Date(),
       }
       setMessages((prev) => [...prev, message])
+    },
+    []
+  )
+
+  const handleViewHistory = useCallback(() => {
+    router.push("/history")
+  }, [router])
+
+  const resetConversationUI = useCallback(
+    (options: { variant?: "clear" | "saved" } = {}) => {
+      setMessages([])
+      setCurrentTranscript("")
+      setAssistantStream("")
+      if (options.variant === "saved") {
+        setAgentState(null)
+        return
+      }
+      setAgentState("listening")
     },
     []
   )
@@ -205,17 +221,20 @@ export function VoiceChat() {
           setAgentState(null)
           break
         case "cleared":
-          setMessages([])
-          setAgentState("listening")
+          resetConversationUI({ variant: "clear" })
           break
         case "conversation_saved":
           if (message.conversation_id) {
-            setSavedConversationId(message.conversation_id)
+            showSessionSavedToast({
+              conversationId: message.conversation_id,
+              onViewHistory: handleViewHistory,
+            })
+            resetConversationUI({ variant: "saved" })
           }
           break
       }
     },
-    [addMessage]
+    [addMessage, handleViewHistory, resetConversationUI]
   )
 
   const handleAudio = useCallback((data: ArrayBuffer) => {
@@ -289,7 +308,7 @@ export function VoiceChat() {
     setRecordingState(RecordingState.IDLE)
   }
 
-  const disconnect = useCallback(() => {
+  const disconnect = useCallback(async () => {
     if (recordingState === RecordingState.RECORDING) {
       stopRecording()
     }
@@ -305,11 +324,12 @@ export function VoiceChat() {
       audioProcessorRef.current = null
     }
     
-    wsRef.current?.disconnect()
+    await wsRef.current?.disconnect(1000)
     setConnectionState(ConnectionState.DISCONNECTED)
     setAgentState(null)
     setRecordingState(RecordingState.IDLE)
-  }, [recordingState])
+    resetConversationUI({ variant: "clear" })
+  }, [recordingState, resetConversationUI])
 
   const disconnectWithCleanup = () => {
     // Clear idle timeout when disconnecting
@@ -321,7 +341,7 @@ export function VoiceChat() {
     if (wsRef.current?.isConnected()) {
       wsRef.current.send(JSON.stringify({ type: "clear" }))
     }
-    setMessages([])
+    resetConversationUI()
   }
 
   const handleStartOrEnd = () => {
@@ -343,10 +363,6 @@ export function VoiceChat() {
       console.log("[VoiceChat] Starting new session")
       startRecording()
     }
-  }
-
-  const handleViewHistory = () => {
-    router.push('/history')
   }
 
   const isConnected = connectionState === ConnectionState.CONNECTED
@@ -529,15 +545,6 @@ export function VoiceChat() {
         </Card>
       </div>
 
-      {/* Toast Notifications */}
-      <Toaster />
-      
-      {/* Session Saved Notification */}
-      <SessionSavedNotification 
-        conversationId={savedConversationId}
-        onViewHistory={handleViewHistory}
-      />
-      
       {/* Idle Timeout Warning */}
       {idleTimeoutWarning && (
         <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-50">

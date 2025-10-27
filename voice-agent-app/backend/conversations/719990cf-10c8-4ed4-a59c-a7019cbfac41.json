@@ -1,0 +1,88 @@
+{
+  "id": "719990cf-10c8-4ed4-a59c-a7019cbfac41",
+  "title": "Hej, can you hear me?",
+  "created_at": "2025-10-27T18:08:54.964215",
+  "updated_at": "2025-10-27T18:08:54.964215",
+  "messages": [
+    {
+      "role": "user",
+      "content": "Hej, can you hear me?",
+      "timestamp": "2025-10-27T18:07:16.822967"
+    },
+    {
+      "role": "assistant",
+      "content": "Yes, I can hear you! How can I help you today?",
+      "timestamp": "2025-10-27T18:07:18.052907"
+    },
+    {
+      "role": "user",
+      "content": "I'm just testing how it works.",
+      "timestamp": "2025-10-27T18:07:26.221881"
+    },
+    {
+      "role": "assistant",
+      "content": "Great! Feel free to ask me anything or let me know if there's something specific you'd like to try out.",
+      "timestamp": "2025-10-27T18:07:27.420331"
+    },
+    {
+      "role": "user",
+      "content": "The sounds are still breaking up, right?",
+      "timestamp": "2025-10-27T18:07:37.318606"
+    },
+    {
+      "role": "assistant",
+      "content": "Sorry to hear that. Audio issues can be frustrating. It might help to check your internet connection or try restarting your device. Let me know if you need more help troubleshooting.",
+      "timestamp": "2025-10-27T18:07:39.835464"
+    },
+    {
+      "role": "user",
+      "content": "Yep.",
+      "timestamp": "2025-10-27T18:07:39.836466"
+    },
+    {
+      "role": "assistant",
+      "content": "If the problem continues, it might be worth checking if there are any updates for your app or device. If you need any more assistance, feel free to ask.",
+      "timestamp": "2025-10-27T18:07:41.909710"
+    },
+    {
+      "role": "user",
+      "content": "I think it's the audio buffer issue.",
+      "timestamp": "2025-10-27T18:07:41.914149"
+    },
+    {
+      "role": "assistant",
+      "content": "That could be it. Adjusting the audio buffer settings might help improve the sound quality. If you're not sure how to do that, I can guide you through the steps.",
+      "timestamp": "2025-10-27T18:07:43.556604"
+    },
+    {
+      "role": "user",
+      "content": "I understand, I need to add some buffer between the messages. Otherwise, it gets the same ID.",
+      "timestamp": "2025-10-27T18:08:23.335959"
+    },
+    {
+      "role": "assistant",
+      "content": "Got it. Adding a slight delay between messages can help prevent that overlap. Let me know if you need any help with setting that up.",
+      "timestamp": "2025-10-27T18:08:25.214520"
+    },
+    {
+      "role": "user",
+      "content": "No, I don't need any help right now.",
+      "timestamp": "2025-10-27T18:08:41.745381"
+    },
+    {
+      "role": "assistant",
+      "content": "Alright, just let me know if you change your mind. I'm here to help!",
+      "timestamp": "2025-10-27T18:08:43.065835"
+    },
+    {
+      "role": "user",
+      "content": "I'll try it out myself.",
+      "timestamp": "2025-10-27T18:08:43.515661"
+    },
+    {
+      "role": "assistant",
+      "content": "Sounds good. Let me know how it goes or if you run into any issues. Good luck!",
+      "timestamp": "2025-10-27T18:08:44.931728"
+    }
+  ]
+}

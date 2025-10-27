@@ -61,7 +61,10 @@ export const Message: React.FC<MessageProps> = ({
             : "bg-muted text-muted-foreground"
         )}
       >
-        <p className="text-sm leading-relaxed whitespace-pre-wrap">
+        <p
+          className="text-sm leading-relaxed whitespace-pre-wrap"
+          role="presentation"
+        >
           {content}
           {isStreaming && (
             <span className="inline-block ml-1 animate-pulse">▋</span>
