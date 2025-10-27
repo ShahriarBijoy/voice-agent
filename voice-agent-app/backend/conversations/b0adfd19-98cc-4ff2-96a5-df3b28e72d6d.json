@@ -1,0 +1,48 @@
+{
+  "id": "b0adfd19-98cc-4ff2-96a5-df3b28e72d6d",
+  "title": "हॅलो!<end>",
+  "created_at": "2025-10-27T01:49:42.044182",
+  "updated_at": "2025-10-27T01:49:42.044182",
+  "messages": [
+    {
+      "role": "user",
+      "content": "हॅलो!<end>",
+      "timestamp": "2025-10-27T01:44:00.251900"
+    },
+    {
+      "role": "assistant",
+      "content": "नमस्ते! कैसे मदद कर सकता हूँ?",
+      "timestamp": "2025-10-27T01:44:01.211714"
+    },
+    {
+      "role": "user",
+      "content": " आय सेड हॅलो इन इंग्लिश.<end>",
+      "timestamp": "2025-10-27T01:44:09.478201"
+    },
+    {
+      "role": "assistant",
+      "content": "ओह, समझ गया! हाय! आपके लिए क्या कर सकता हूँ?",
+      "timestamp": "2025-10-27T01:44:10.507344"
+    },
+    {
+      "role": "user",
+      "content": " No, no, hello, how can I help you?<end>",
+      "timestamp": "2025-10-27T01:44:19.178249"
+    },
+    {
+      "role": "assistant",
+      "content": "Got it! How can I assist you today?",
+      "timestamp": "2025-10-27T01:44:20.109558"
+    },
+    {
+      "role": "user",
+      "content": " Can you hear me?<end>",
+      "timestamp": "2025-10-27T01:45:05.759946"
+    },
+    {
+      "role": "assistant",
+      "content": "Yes, I can hear you! What would you like to talk about?",
+      "timestamp": "2025-10-27T01:45:06.987522"
+    }
+  ]
+}

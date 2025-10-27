@@ -8,7 +8,7 @@ class Settings:
     # API Keys
     SONIOX_API_KEY = os.getenv("SONIOX_API_KEY")
     OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-    OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-5-nano")
+    OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini")  # Valid default model
     VOGENT_API_KEY = os.getenv("VOGENT_API_KEY")
     VOGENT_VOICE_ID = os.getenv("VOGENT_VOICE_ID")
     

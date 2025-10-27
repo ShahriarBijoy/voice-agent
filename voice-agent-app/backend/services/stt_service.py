@@ -19,7 +19,7 @@ class SonioxSTTService:
             # Send configuration as first message
             config = {
                 "api_key": settings.SONIOX_API_KEY,
-                "model": "stt-rt-v3",
+                "model": "stt-rt-preview",  # Correct model name per Soniox docs
                 # Raw audio format configuration
                 # 16-bit signed PCM, little-endian
                 "audio_format": "pcm_s16le",
@@ -29,7 +29,9 @@ class SonioxSTTService:
                 "include_nonfinal": True,
                 # Enable endpoint detection to automatically finalize
                 # when speaker stops talking (VAD)
-                "enable_endpoint_detection": True
+                "enable_endpoint_detection": True,
+                # Disable any debugging tags
+                "include_debug_info": False
             }
             
             # Send config as first message

@@ -1,0 +1,58 @@
+{
+  "id": "2ca37c92-3474-4418-b65a-6448f09c523d",
+  "title": "Hey, can you hear me?<end>",
+  "created_at": "2025-10-27T01:31:43.981978",
+  "updated_at": "2025-10-27T01:31:43.981978",
+  "messages": [
+    {
+      "role": "user",
+      "content": "Hey, can you hear me?<end>",
+      "timestamp": "2025-10-27T01:31:06.142016"
+    },
+    {
+      "role": "assistant",
+      "content": "Yes, I can hear you. How can I help you today?",
+      "timestamp": "2025-10-27T01:31:07.849543"
+    },
+    {
+      "role": "user",
+      "content": " Uh, I just wanted to check some features that I implemented.<end>",
+      "timestamp": "2025-10-27T01:31:16.885017"
+    },
+    {
+      "role": "assistant",
+      "content": "Sure, feel free to tell me more about the features, and I'll do my best to assist you.",
+      "timestamp": "2025-10-27T01:31:18.922071"
+    },
+    {
+      "role": "user",
+      "content": " Can you",
+      "timestamp": "2025-10-27T01:31:20.669475"
+    },
+    {
+      "role": "assistant",
+      "content": "It looks like your message got cut off. Could you please continue what you were saying?",
+      "timestamp": "2025-10-27T01:31:22.213426"
+    },
+    {
+      "role": "user",
+      "content": "<end>",
+      "timestamp": "2025-10-27T01:31:22.214428"
+    },
+    {
+      "role": "assistant",
+      "content": "No problem. Whenever you're ready to continue, just let me know how I can assist you.",
+      "timestamp": "2025-10-27T01:31:24.540523"
+    },
+    {
+      "role": "user",
+      "content": " Mm-hmm.<end>",
+      "timestamp": "2025-10-27T01:31:38.842151"
+    },
+    {
+      "role": "assistant",
+      "content": "Take your time. Whenever you're ready, just let me know what you need help with.",
+      "timestamp": "2025-10-27T01:31:40.619958"
+    }
+  ]
+}

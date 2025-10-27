@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Play, Pause, Eraser } from "lucide-react"
+import { useRouter } from "next/navigation"
 
 import { cn } from "@/lib/utils"
 import { ButtonGroup } from "@/components/ui/button-group"
@@ -21,6 +22,8 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import { Toaster } from "@/components/ui/use-toast"
+import { SessionSavedNotification } from "@/components/ui/session-saved-notification"
 import {
   Message as MessageType,
   ConnectionState,
@@ -31,6 +34,7 @@ import { VoiceAgentWebSocket } from "@/lib/websocket-client"
 import { AudioProcessor, AudioPlayer } from "@/lib/audio-processor"
 
 export function VoiceChat() {
+  const router = useRouter()
   const [messages, setMessages] = useState<MessageType[]>([])
   const [connectionState, setConnectionState] = useState<ConnectionState>(
     ConnectionState.DISCONNECTED
@@ -42,15 +46,27 @@ export function VoiceChat() {
   const [isMuted, setIsMuted] = useState(false)
   const [agentState, setAgentState] = useState<AgentState>(null)
   const [selectedMicDevice, setSelectedMicDevice] = useState<string>("")
+  const [savedConversationId, setSavedConversationId] = useState<string | undefined>()
+  const [idleTimeoutWarning, setIdleTimeoutWarning] = useState<boolean>(false)
 
   const wsRef = useRef<VoiceAgentWebSocket | null>(null)
   const audioProcessorRef = useRef<AudioProcessor | null>(null)
   const audioPlayerRef = useRef<AudioPlayer | null>(null)
+  const idleTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const idleWarningTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   useEffect(() => {
     audioPlayerRef.current = new AudioPlayer()
 
     return () => {
+      // Clear idle timeouts manually
+      if (idleTimeoutRef.current) {
+        clearTimeout(idleTimeoutRef.current)
+      }
+      if (idleWarningTimeoutRef.current) {
+        clearTimeout(idleWarningTimeoutRef.current)
+      }
+      
       if (audioProcessorRef.current) {
         audioProcessorRef.current.stopRecording()
       }
@@ -62,6 +78,66 @@ export function VoiceChat() {
       }
     }
   }, [])
+
+  // Idle timeout management
+  const resetIdleTimeout = useCallback(() => {
+    // Clear existing timeouts
+    if (idleTimeoutRef.current) {
+      clearTimeout(idleTimeoutRef.current)
+    }
+    if (idleWarningTimeoutRef.current) {
+      clearTimeout(idleWarningTimeoutRef.current)
+    }
+    setIdleTimeoutWarning(false)
+
+    // Only set timeout if we're connected and recording
+    if (connectionState === ConnectionState.CONNECTED && recordingState === RecordingState.RECORDING) {
+      // Show warning after 1.5 minutes (90 seconds)
+      idleWarningTimeoutRef.current = setTimeout(() => {
+        setIdleTimeoutWarning(true)
+      }, 90 * 1000)
+
+      // Auto-disconnect after 2 minutes (120 seconds)
+      idleTimeoutRef.current = setTimeout(() => {
+        console.log("[VoiceChat] Idle timeout reached, disconnecting session")
+        setIdleTimeoutWarning(false)
+        
+        // Direct disconnect logic to avoid dependency issues
+        if (recordingState === RecordingState.RECORDING) {
+          stopRecording()
+        }
+        
+        if (audioProcessorRef.current) {
+          audioProcessorRef.current.stopRecording()
+          audioProcessorRef.current = null
+        }
+        
+        wsRef.current?.disconnect()
+        setConnectionState(ConnectionState.DISCONNECTED)
+        setAgentState(null)
+        setRecordingState(RecordingState.IDLE)
+      }, 120 * 1000)
+    }
+  }, [connectionState, recordingState])
+
+  const clearIdleTimeout = useCallback(() => {
+    if (idleTimeoutRef.current) {
+      clearTimeout(idleTimeoutRef.current)
+      idleTimeoutRef.current = null
+    }
+    if (idleWarningTimeoutRef.current) {
+      clearTimeout(idleWarningTimeoutRef.current)
+      idleWarningTimeoutRef.current = null
+    }
+    setIdleTimeoutWarning(false)
+  }, [])
+
+  // Reset idle timeout when user activity is detected
+  useEffect(() => {
+    if (currentTranscript || messages.length > 0) {
+      resetIdleTimeout()
+    }
+  }, [currentTranscript, messages.length, resetIdleTimeout])
 
   const addMessage = useCallback(
     (role: "user" | "assistant", content: string) => {
@@ -102,7 +178,7 @@ export function VoiceChat() {
           }
           break
         case "tts_complete":
-          setRecordingState(RecordingState.IDLE)
+          // Don't change recording state - keep the session active
           setAgentState("listening")
           break
         case "error":
@@ -113,6 +189,11 @@ export function VoiceChat() {
         case "cleared":
           setMessages([])
           setAgentState("listening")
+          break
+        case "conversation_saved":
+          if (message.conversation_id) {
+            setSavedConversationId(message.conversation_id)
+          }
           break
       }
     },
@@ -143,7 +224,11 @@ export function VoiceChat() {
 
   const startRecording = async () => {
     try {
-      console.log("[VoiceChat] Starting recording...")
+      console.log("[VoiceChat] Starting recording...", { 
+        connectionState, 
+        recordingState, 
+        isConnected: wsRef.current?.isConnected() 
+      })
       setAgentState("listening")
       
       if (!wsRef.current?.isConnected()) {
@@ -156,31 +241,62 @@ export function VoiceChat() {
         throw new Error("WebSocket not available")
       }
 
-      console.log("[VoiceChat] Initializing audio processor...")
-      audioProcessorRef.current = new AudioProcessor()
-      await audioProcessorRef.current.initialize(ws)
-      console.log("[VoiceChat] Audio processor initialized")
+      // Only initialize audio processor if it doesn't exist or is not active
+      if (!audioProcessorRef.current || !audioProcessorRef.current.isRecording()) {
+        console.log("[VoiceChat] Initializing audio processor...")
+        audioProcessorRef.current = new AudioProcessor()
+        await audioProcessorRef.current.initialize(ws)
+        console.log("[VoiceChat] Audio processor initialized")
+      }
+      
+      console.log("[VoiceChat] Setting recording state to RECORDING")
       setRecordingState(RecordingState.RECORDING)
+      
+      // Start idle timeout when recording starts
+      setTimeout(() => resetIdleTimeout(), 100)
     } catch (error) {
       console.error("[VoiceChat] Failed to start recording:", error)
       alert("Failed to access microphone. Please check permissions.")
       setAgentState(null)
+      setRecordingState(RecordingState.IDLE)
     }
   }
 
   const stopRecording = () => {
-    audioProcessorRef.current?.finalize()
-    audioProcessorRef.current?.stopRecording()
+    if (audioProcessorRef.current) {
+      audioProcessorRef.current.finalize()
+      audioProcessorRef.current.stopRecording()
+      // Don't null the reference here - keep it for potential reuse
+    }
     setRecordingState(RecordingState.IDLE)
   }
 
-  const disconnect = () => {
+  const disconnect = useCallback(() => {
     if (recordingState === RecordingState.RECORDING) {
       stopRecording()
     }
+    
+    // Send disconnect message to backend before closing WebSocket
+    if (wsRef.current?.isConnected()) {
+      wsRef.current.send(JSON.stringify({ type: "disconnect" }))
+    }
+    
+    // Properly clean up audio processor when disconnecting
+    if (audioProcessorRef.current) {
+      audioProcessorRef.current.stopRecording()
+      audioProcessorRef.current = null
+    }
+    
     wsRef.current?.disconnect()
     setConnectionState(ConnectionState.DISCONNECTED)
     setAgentState(null)
+    setRecordingState(RecordingState.IDLE)
+  }, [recordingState])
+
+  const disconnectWithCleanup = () => {
+    // Clear idle timeout when disconnecting
+    clearIdleTimeout()
+    disconnect()
   }
 
   const clearConversation = () => {
@@ -191,15 +307,28 @@ export function VoiceChat() {
   }
 
   const handleStartOrEnd = () => {
+    console.log("[VoiceChat] Button clicked", { connectionState, recordingState })
     if (
       connectionState === ConnectionState.CONNECTED &&
       recordingState === RecordingState.RECORDING
     ) {
+      // Stop recording and disconnect the session
+      console.log("[VoiceChat] Stopping session")
       stopRecording()
-      disconnect()
+      disconnectWithCleanup()
+    } else if (connectionState === ConnectionState.CONNECTED && recordingState === RecordingState.IDLE) {
+      // Start recording in existing session
+      console.log("[VoiceChat] Starting recording in existing session")
+      startRecording()
     } else if (connectionState === ConnectionState.DISCONNECTED) {
+      // Start new session
+      console.log("[VoiceChat] Starting new session")
       startRecording()
     }
+  }
+
+  const handleViewHistory = () => {
+    router.push('/history')
   }
 
   const isConnected = connectionState === ConnectionState.CONNECTED
@@ -373,6 +502,29 @@ export function VoiceChat() {
           </div>
         </Card>
       </div>
+
+      {/* Toast Notifications */}
+      <Toaster />
+      
+      {/* Session Saved Notification */}
+      <SessionSavedNotification 
+        conversationId={savedConversationId}
+        onViewHistory={handleViewHistory}
+      />
+      
+      {/* Idle Timeout Warning */}
+      {idleTimeoutWarning && (
+        <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-50">
+          <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded-lg shadow-lg">
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-yellow-500 rounded-full animate-pulse"></div>
+              <span className="text-sm font-medium">
+                Session will end in 30 seconds due to inactivity
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

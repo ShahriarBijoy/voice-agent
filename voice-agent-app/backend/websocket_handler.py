@@ -24,8 +24,25 @@ class VoiceAgentWebSocket:
         
         try:
             # Initialize services
-            await self.stt_service.connect()
-            await self.tts_service.connect()
+            try:
+                await self.stt_service.connect()
+            except Exception as e:
+                print(f"Failed to initialize STT service: {e}")
+                await self.websocket.send_json({
+                    "type": "error",
+                    "message": f"STT service unavailable: {str(e)}"
+                })
+                return
+            
+            try:
+                await self.tts_service.connect()
+            except Exception as e:
+                print(f"Failed to initialize TTS service: {e}")
+                await self.websocket.send_json({
+                    "type": "error",
+                    "message": f"TTS service unavailable: {str(e)}"
+                })
+                return
             
             # Send ready message
             await self.websocket.send_json({
@@ -50,8 +67,14 @@ class VoiceAgentWebSocket:
                 
         except WebSocketDisconnect:
             print("Client disconnected")
+            # Save conversation before cleanup
+            await self.save_conversation_and_notify()
         except Exception as e:
             print(f"WebSocket error: {e}")
+            import traceback
+            traceback.print_exc()
+            # Save conversation before cleanup
+            await self.save_conversation_and_notify()
         finally:
             await self.cleanup()
 
@@ -76,6 +99,11 @@ class VoiceAgentWebSocket:
                             "type": "cleared",
                             "message": "Conversation cleared"
                         })
+                    elif data.get("type") == "disconnect":
+                        # Manual disconnect - save conversation and close
+                        print("Manual disconnect requested")
+                        await self.save_conversation_and_notify()
+                        break
             except Exception as e:
                 print(f"Receive error: {e}")
                 break
@@ -111,6 +139,11 @@ class VoiceAgentWebSocket:
                 if "tokens" in result:
                     for token in result["tokens"]:
                         if token.get("text"):
+                            # Debug: Check if token contains <end> tag
+                            if "<end>" in token.get("text", ""):
+                                print(f"DEBUG: Found <end> tag in token: "
+                                      f"{token}")
+                            
                             if token.get("is_final"):
                                 # Final tokens are returned once
                                 # Append to final_tokens
@@ -126,6 +159,11 @@ class VoiceAgentWebSocket:
                     # Join tokens directly without adding extra spaces
                     # Tokens already include spaces as separate tokens
                     text = "".join([t["text"] for t in all_tokens])
+                    
+                    # Remove debugging tags from the text
+                    text = (text.replace("<end>", "")
+                            .replace("<END>", "").strip())
+                    
                     # Check if we have any non-final tokens
                     has_non_final = len(non_final_tokens) > 0
                     
@@ -165,34 +203,56 @@ class VoiceAgentWebSocket:
     async def process_user_input(self, text: str):
         """Process user input through LLM and TTS"""
         try:
-            # Add to conversation
-            self.conversation.add_message("user", text)
+            # Clean the text by removing debugging tags
+            clean_text = (text.replace("<end>", "")
+                          .replace("<END>", "").strip())
             
+            # Add to conversation
+            self.conversation.add_message("user", clean_text)
+
             # Send to client
             await self.websocket.send_json({
                 "type": "user_message",
-                "text": text
+                "text": clean_text
             })
-            
+
             # Get LLM response
             system_prompt = get_prompt("default")
             full_response = ""
+
+            # Collect the entire response first
             async for chunk in self.llm_service.generate_response(
-                text, system_prompt
+                clean_text, system_prompt
             ):
                 full_response += chunk
-                
-                # Send chunk to TTS when we have enough text
-                if len(full_response) >= 50 or chunk.endswith((".", "!", "?")):
-                    await self.tts_service.synthesize_speech(full_response, final=False)
-                    full_response = ""
-            
-            # Send final text to TTS
-            if full_response:
-                await self.tts_service.synthesize_speech(full_response, final=True)
-                
+                # Stream LLM chunks to client for display
+                await self.websocket.send_json({
+                    "type": "assistant_chunk",
+                    "text": chunk
+                })
+
+            # Add assistant response to conversation
+            self.conversation.add_message("assistant", full_response)
+
+            # Send complete assistant message to client
+            await self.websocket.send_json({
+                "type": "assistant_message",
+                "text": full_response
+            })
+
+            # Now send the COMPLETE response to TTS as a single message
+            # This avoids confusing Vogent with multiple generation IDs
+            if full_response.strip():
+                print(f"[TTS] Sending complete response to Vogent: {len(full_response)} chars")
+                await self.tts_service.synthesize_speech(
+                    full_response.strip(),
+                    final=True
+                )
+
         except Exception as e:
             print(f"Processing error: {e}")
+            import traceback
+            traceback.print_exc()
             await self.websocket.send_json({
                 "type": "error",
                 "message": str(e)
@@ -206,19 +266,52 @@ class VoiceAgentWebSocket:
                 if result:
                     if result["type"] == "audio":
                         # Forward audio to client
-                        await self.websocket.send_bytes(result["data"])
+                        audio_data = result['data']
+                        print(f"[WS] 🎵 Received {len(audio_data)} bytes from TTS")
+                        print(f"[WS] First 4 bytes (RIFF header): {audio_data[:4]}")
+                        await self.websocket.send_bytes(audio_data)
+                        print(f"[WS] ✅ Forwarded {len(audio_data)} bytes to client")
                     elif result["type"] == "complete":
+                        print(f"[WS] TTS generation complete, sending tts_complete")
                         await self.websocket.send_json({
                             "type": "tts_complete"
                         })
                     elif result["type"] == "error":
+                        print(f"[WS] ❌ TTS error: {result['error']}")
                         await self.websocket.send_json({
                             "type": "error",
-                            "message": result["error"]
+                            "message": f"TTS Error: {result['error']}"
                         })
+                else:
+                    # Timeout or connection issue, continue waiting
+                    print("[WS] TTS returned None (timeout or connection issue), continuing...")
+                    await asyncio.sleep(0.1)
             except Exception as e:
-                print(f"TTS loop error: {e}")
-                break
+                print(f"❌ TTS loop error: {e}")
+                import traceback
+                traceback.print_exc()
+                await asyncio.sleep(0.5)
+                continue
+
+    async def save_conversation_and_notify(self):
+        """Save conversation and notify client if possible"""
+        conversation_id = self.conversation.save_conversation()
+        if conversation_id:
+            print(f"Conversation saved with ID: {conversation_id}")
+            try:
+                # Check if WebSocket is still open before sending
+                if (hasattr(self.websocket, 'client_state') and 
+                    self.websocket.client_state.name == 'CONNECTED'):
+                    await self.websocket.send_json({
+                        "type": "conversation_saved",
+                        "conversation_id": conversation_id
+                    })
+                    print("Conversation saved notification sent successfully")
+                else:
+                    print("WebSocket already closed, skipping notification")
+            except Exception as e:
+                print(f"Failed to send conversation_saved message: {e}")
+        return conversation_id
 
     async def cleanup(self):
         """Clean up resources"""

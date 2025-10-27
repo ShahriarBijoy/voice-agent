@@ -1,0 +1,18 @@
+{
+  "id": "c21d25b8-07aa-47e0-b357-2c840c896288",
+  "title": "ഹലോ, can you help me?",
+  "created_at": "2025-10-27T01:53:53.261469",
+  "updated_at": "2025-10-27T01:53:53.261469",
+  "messages": [
+    {
+      "role": "user",
+      "content": "ഹലോ, can you help me?",
+      "timestamp": "2025-10-27T01:51:08.329132"
+    },
+    {
+      "role": "assistant",
+      "content": "Hello! Of course, I'm here to help. What do you need assistance with?",
+      "timestamp": "2025-10-27T01:51:09.210948"
+    }
+  ]
+}

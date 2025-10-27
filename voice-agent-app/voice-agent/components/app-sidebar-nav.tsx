@@ -1,5 +1,6 @@
 "use client"
 
+import { usePathname } from "next/navigation"
 import {
   ArrowRightOnRectangleIcon,
   Cog6ToothIcon,
@@ -22,13 +23,31 @@ import { SidebarNav, SidebarTrigger } from "@/components/ui/sidebar"
 import { ThemeToggle } from "@/components/theme-toggle"
 
 export default function AppSidebarNav() {
+  const pathname = usePathname()
+  
+  const getBreadcrumbs = () => {
+    if (pathname === "/history") {
+      return (
+        <>
+          <BreadcrumbsItem href="/">Home</BreadcrumbsItem>
+          <BreadcrumbsItem>History</BreadcrumbsItem>
+        </>
+      )
+    }
+    return (
+      <>
+        <BreadcrumbsItem href="/">Home</BreadcrumbsItem>
+        <BreadcrumbsItem>Voice Chat</BreadcrumbsItem>
+      </>
+    )
+  }
+
   return (
     <SidebarNav>
       <span className="flex items-center gap-x-4">
         <SidebarTrigger />
         <Breadcrumbs className="hidden md:flex">
-          <BreadcrumbsItem href="/">Home</BreadcrumbsItem>
-          <BreadcrumbsItem>Voice Chat</BreadcrumbsItem>
+          {getBreadcrumbs()}
         </Breadcrumbs>
       </span>
       <div className="flex items-center gap-2 ml-auto">

@@ -1,5 +1,6 @@
 "use client"
 
+import { usePathname } from "next/navigation"
 import {
   ChevronUpDownIcon,
 } from "@heroicons/react/24/outline"
@@ -36,13 +37,14 @@ import {
   SidebarHeader,
   SidebarItem,
   SidebarLabel,
-  SidebarLink,
   SidebarRail,
   SidebarSection,
   SidebarSectionGroup,
 } from "@/components/ui/sidebar"
 
 export default function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
+  const pathname = usePathname()
+  
   return (
     <Sidebar {...props}>
       <SidebarHeader>
@@ -61,12 +63,12 @@ export default function AppSidebar(props: React.ComponentProps<typeof Sidebar>) 
       <SidebarContent>
         <SidebarSectionGroup>
           <SidebarSection label="Main">
-            <SidebarItem tooltip="Home" isCurrent href="#">
+            <SidebarItem tooltip="Home" isCurrent={pathname === "/"} href="/">
               <HomeSolid />
               <SidebarLabel>Home</SidebarLabel>
             </SidebarItem>
 
-            <SidebarItem tooltip="Current Conversation" href="#">
+            <SidebarItem tooltip="Current Conversation" href="/">
               <ChatBubbleLeftRightSolid />
               <SidebarLabel>Conversation</SidebarLabel>
             </SidebarItem>
@@ -79,11 +81,11 @@ export default function AppSidebar(props: React.ComponentProps<typeof Sidebar>) 
                 <SidebarLabel>History</SidebarLabel>
               </SidebarDisclosureTrigger>
               <SidebarDisclosurePanel>
-                <SidebarItem href="#" tooltip="Recent">
+                <SidebarItem href="/history" tooltip="Recent" isCurrent={pathname === "/history"}>
                   <ClockSolid />
                   <SidebarLabel>Recent</SidebarLabel>
                 </SidebarItem>
-                <SidebarItem href="#" tooltip="Archived">
+                <SidebarItem href="/history" tooltip="Archived">
                   <ArchiveBoxSolid />
                   <SidebarLabel>Archived</SidebarLabel>
                 </SidebarItem>
