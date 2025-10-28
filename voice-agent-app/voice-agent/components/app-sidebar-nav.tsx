@@ -1,25 +1,16 @@
 "use client"
 
 import { usePathname } from "next/navigation"
+import { SidebarTrigger } from "@/components/ui/sidebar"
+import { Separator } from "@/components/ui/separator"
 import {
-  ArrowRightOnRectangleIcon,
-  Cog6ToothIcon,
-  CommandLineIcon,
-  Squares2X2Icon,
-} from "@heroicons/react/24/outline"
-import { Avatar } from "@/components/ui/avatar"
-import { Breadcrumbs, BreadcrumbsItem } from "@/components/ui/breadcrumbs"
-import {
-  Menu,
-  MenuContent,
-  MenuHeader,
-  MenuItem,
-  MenuLabel,
-  MenuSection,
-  MenuSeparator,
-  MenuTrigger,
-} from "@/components/ui/menu"
-import { SidebarNav, SidebarTrigger } from "@/components/ui/sidebar"
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb"
 import { ThemeToggle } from "@/components/theme-toggle"
 
 export default function AppSidebarNav() {
@@ -29,71 +20,52 @@ export default function AppSidebarNav() {
     if (pathname === "/history") {
       return (
         <>
-          <BreadcrumbsItem href="/">Home</BreadcrumbsItem>
-          <BreadcrumbsItem>History</BreadcrumbsItem>
+          <BreadcrumbItem>
+            <BreadcrumbLink href="/">Conversation</BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage>History</BreadcrumbPage>
+          </BreadcrumbItem>
+        </>
+      )
+    }
+    if (pathname?.startsWith("/agents")) {
+      return (
+        <>
+          <BreadcrumbItem>
+            <BreadcrumbLink href="/">Conversation</BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage>Agent Builder</BreadcrumbPage>
+          </BreadcrumbItem>
         </>
       )
     }
     return (
       <>
-        <BreadcrumbsItem href="/">Home</BreadcrumbsItem>
-        <BreadcrumbsItem>Voice Chat</BreadcrumbsItem>
+        <BreadcrumbItem>
+          <BreadcrumbPage>Conversation</BreadcrumbPage>
+        </BreadcrumbItem>
       </>
     )
   }
 
   return (
-    <SidebarNav>
-      <span className="flex items-center gap-x-4">
-        <SidebarTrigger />
-        <Breadcrumbs className="hidden md:flex">
-          {getBreadcrumbs()}
-        </Breadcrumbs>
-      </span>
-      <div className="flex items-center gap-2 ml-auto">
-        <ThemeToggle />
-        <UserMenu />
+    <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
+      <div className="flex items-center gap-2 px-4">
+        <SidebarTrigger className="-ml-1" />
+        <Separator orientation="vertical" className="mr-2 h-4" />
+        <Breadcrumb>
+          <BreadcrumbList>
+            {getBreadcrumbs()}
+          </BreadcrumbList>
+        </Breadcrumb>
       </div>
-    </SidebarNav>
-  )
-}
-
-function UserMenu() {
-  return (
-    <Menu>
-      <MenuTrigger className="ml-auto md:hidden" aria-label="Open Menu">
-        <Avatar isSquare alt="user" src="https://intentui.com/images/avatar/cobain.jpg" />
-      </MenuTrigger>
-      <MenuContent popover={{ placement: "bottom end" }} className="min-w-64">
-        <MenuSection>
-          <MenuHeader separator>
-            <span className="block">User</span>
-            <span className="font-normal text-muted-fg">@user</span>
-          </MenuHeader>
-        </MenuSection>
-        <MenuItem href="#dashboard">
-          <Squares2X2Icon />
-          <MenuLabel>Dashboard</MenuLabel>
-        </MenuItem>
-        <MenuItem href="#settings">
-          <Cog6ToothIcon />
-          <MenuLabel>Settings</MenuLabel>
-        </MenuItem>
-        <MenuSeparator />
-        <MenuItem>
-          <CommandLineIcon />
-          <MenuLabel>Command Menu</MenuLabel>
-        </MenuItem>
-        <MenuSeparator />
-        <MenuItem href="#contact-s">
-          <MenuLabel>Contact Support</MenuLabel>
-        </MenuItem>
-        <MenuSeparator />
-        <MenuItem href="#logout">
-          <ArrowRightOnRectangleIcon />
-          <MenuLabel>Log out</MenuLabel>
-        </MenuItem>
-      </MenuContent>
-    </Menu>
+      <div className="ml-auto px-4">
+        <ThemeToggle />
+      </div>
+    </header>
   )
 }

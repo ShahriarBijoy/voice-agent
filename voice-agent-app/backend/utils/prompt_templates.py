@@ -34,6 +34,20 @@ Guidelines:
 - Adapt your explanation based on the user's responses
 - Keep explanations concise for voice delivery"""
 
+def compose_prompt(
+    *,
+    tone: str,
+    behavior: str,
+    welcome_message: str,
+    speaking_style: str,
+    tool_context: str,
+) -> str:
+    base = DEFAULT_SYSTEM_PROMPT
+    profile_context = f"Tone: {tone}. Speaking style: {speaking_style}. Behavior: {behavior}. Welcome message: {welcome_message}."
+    tool_section = f"Available tools: {tool_context}. Call tools only when the user intent matches their capability."
+    return f"{base}\n\n{profile_context}\n\n{tool_section}"
+
+
 def get_prompt(prompt_type: str = "default") -> str:
     """Get system prompt by type"""
     prompts = {

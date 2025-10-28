@@ -205,9 +205,9 @@ export const ConversationBar = React.forwardRef<
     return (
       <div
         ref={ref}
-        className={cn("flex w-full items-end justify-center p-4", className)}
+        className={cn("fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 w-full max-w-2xl px-4", className)}
       >
-        <Card className="m-0 w-full gap-0 border p-0 shadow-lg">
+        <Card className="m-0 w-full gap-0 border p-0 shadow-xl bg-background/95 backdrop-blur-sm">
           <div className="flex flex-col-reverse">
             <div>
               {keyboardOpen && <Separator />}
@@ -293,7 +293,7 @@ export const ConversationBar = React.forwardRef<
                       }
                     />
                   </Button>
-                  <Separator orientation="vertical" className="mx-1 -my-2.5" />
+                  <Separator orientation="vertical" className="mx-3 -my-2.5" />
                   <Button
                     variant="ghost"
                     size="icon"

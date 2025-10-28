@@ -1,0 +1,58 @@
+{
+  "id": "14d6f75b-96f3-4506-bf37-729e38479dc2",
+  "title": "Hey, can you hear me?",
+  "created_at": "2025-10-28T17:07:36.042710",
+  "updated_at": "2025-10-28T17:07:36.042710",
+  "messages": [
+    {
+      "role": "user",
+      "content": "Hey, can you hear me?",
+      "timestamp": "2025-10-28T17:06:37.426930"
+    },
+    {
+      "role": "assistant",
+      "content": "Hello! Yes, I can hear you. How can I assist you today?",
+      "timestamp": "2025-10-28T17:06:39.079575"
+    },
+    {
+      "role": "user",
+      "content": "Can you set an appointment for tomorrow?",
+      "timestamp": "2025-10-28T17:06:49.179910"
+    },
+    {
+      "role": "assistant",
+      "content": "Of course! Could you let me know the time and details of the appointment you'd like to set?",
+      "timestamp": "2025-10-28T17:06:52.038906"
+    },
+    {
+      "role": "user",
+      "content": "Yeah, set an appointment for my dentist.",
+      "timestamp": "2025-10-28T17:07:01.647971"
+    },
+    {
+      "role": "assistant",
+      "content": "Sure thing! What time would you like to schedule your dentist appointment for tomorrow?",
+      "timestamp": "2025-10-28T17:07:03.371137"
+    },
+    {
+      "role": "user",
+      "content": "Around two.",
+      "timestamp": "2025-10-28T17:07:13.453789"
+    },
+    {
+      "role": "assistant",
+      "content": "Great! I'll set an appointment for your dentist at 2 PM tomorrow. Is there anything else you'd like to add?",
+      "timestamp": "2025-10-28T17:07:15.297605"
+    },
+    {
+      "role": "user",
+      "content": "No, thank you.",
+      "timestamp": "2025-10-28T17:07:26.470715"
+    },
+    {
+      "role": "assistant",
+      "content": "You're welcome! If you need anything else, just let me know. Have a great day!",
+      "timestamp": "2025-10-28T17:07:28.826881"
+    }
+  ]
+}

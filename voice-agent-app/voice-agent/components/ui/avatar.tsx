@@ -1,84 +1,53 @@
-import { twMerge } from "tailwind-merge"
+"use client"
 
-interface AvatarProps {
-  src?: string | null
-  initials?: string
-  alt?: string
-  className?: string
-  isSquare?: boolean
-  size?:
-    | "xs"
-    | "sm"
-    | "md"
-    | "lg"
-    | "xl"
-    | "2xl"
-    | "3xl"
-    | "4xl"
-    | "5xl"
-    | "6xl"
-    | "7xl"
-    | "8xl"
-    | "9xl"
-}
+import * as React from "react"
+import * as AvatarPrimitive from "@radix-ui/react-avatar"
 
-const Avatar = ({
-  src = null,
-  isSquare = false,
-  size = "md",
-  initials,
-  alt = "",
+import { cn } from "@/lib/utils"
+
+function Avatar({
   className,
   ...props
-}: AvatarProps & React.ComponentPropsWithoutRef<"span">) => {
+}: React.ComponentProps<typeof AvatarPrimitive.Root>) {
   return (
-    <span
+    <AvatarPrimitive.Root
       data-slot="avatar"
+      className={cn(
+        "relative flex size-8 shrink-0 overflow-hidden rounded-full",
+        className
+      )}
       {...props}
-      className={twMerge(
-        "-outline-offset-1 inline-grid size-(--avatar-size) shrink-0 align-middle outline-1 outline-fg/(--ring-opacity) [--avatar-radius:20%] [--ring-opacity:20%] *:col-start-1 *:row-start-1 *:size-(--avatar-size)",
-        size === "xs" && "[--avatar-size:--spacing(5)]",
-        size === "sm" && "[--avatar-size:--spacing(6)]",
-        size === "md" && "[--avatar-size:--spacing(8)]",
-        size === "lg" && "[--avatar-size:--spacing(10)]",
-        size === "xl" && "[--avatar-size:--spacing(12)]",
-        size === "2xl" && "[--avatar-size:--spacing(14)]",
-        size === "3xl" && "[--avatar-size:--spacing(16)]",
-        size === "4xl" && "[--avatar-size:--spacing(20)]",
-        size === "5xl" && "[--avatar-size:--spacing(24)]",
-        size === "6xl" && "[--avatar-size:--spacing(28)]",
-        size === "7xl" && "[--avatar-size:--spacing(32)]",
-        size === "8xl" && "[--avatar-size:--spacing(36)]",
-        size === "9xl" && "[--avatar-size:--spacing(32)]",
-        isSquare
-          ? "rounded-(--avatar-radius) *:rounded-(--avatar-radius)"
-          : "rounded-full *:rounded-full",
-        className,
-      )}
-    >
-      {initials && (
-        <svg
-          className="size-full select-none fill-current p-[5%] font-md text-[48px] uppercase"
-          viewBox="0 0 100 100"
-          aria-hidden={alt ? undefined : "true"}
-        >
-          {alt && <title>{alt}</title>}
-          <text
-            x="50%"
-            y="50%"
-            alignmentBaseline="middle"
-            dominantBaseline="middle"
-            textAnchor="middle"
-            dy=".125em"
-          >
-            {initials}
-          </text>
-        </svg>
-      )}
-      {src && <img className="size-full object-cover object-center" src={src} alt={alt} />}
-    </span>
+    />
   )
 }
 
-export type { AvatarProps }
-export { Avatar }
+function AvatarImage({
+  className,
+  ...props
+}: React.ComponentProps<typeof AvatarPrimitive.Image>) {
+  return (
+    <AvatarPrimitive.Image
+      data-slot="avatar-image"
+      className={cn("aspect-square size-full", className)}
+      {...props}
+    />
+  )
+}
+
+function AvatarFallback({
+  className,
+  ...props
+}: React.ComponentProps<typeof AvatarPrimitive.Fallback>) {
+  return (
+    <AvatarPrimitive.Fallback
+      data-slot="avatar-fallback"
+      className={cn(
+        "bg-muted flex size-full items-center justify-center rounded-full",
+        className
+      )}
+      {...props}
+    />
+  )
+}
+
+export { Avatar, AvatarImage, AvatarFallback }

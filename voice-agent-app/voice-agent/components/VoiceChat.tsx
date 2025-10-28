@@ -2,11 +2,11 @@
 
 import { useState, useEffect, useRef, useCallback } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { Play, Pause, Eraser } from "lucide-react"
+import { Play, Pause, Eraser, Settings2 } from "lucide-react"
 import { useRouter } from "next/navigation"
+import Link from "next/link"
 
 import { cn } from "@/lib/utils"
-import { ButtonGroup } from "@/components/ui/button-group"
 import { Card } from "@/components/ui/card"
 import {
   Conversation,
@@ -30,10 +30,12 @@ import {
   WebSocketMessage,
 } from "@/lib/types"
 import { VoiceAgentWebSocket } from "@/lib/websocket-client"
+import { useAgentBuilderState } from "@/lib/agent-profiles"
 import { AudioProcessor, AudioPlayer } from "@/lib/audio-processor"
 
 export function VoiceChat() {
   const router = useRouter()
+  const [{ profileId }] = useAgentBuilderState()
   const [messages, setMessages] = useState<MessageType[]>([])
   const [connectionState, setConnectionState] = useState<ConnectionState>(
     ConnectionState.DISCONNECTED
@@ -253,6 +255,9 @@ export function VoiceChat() {
       )
       await wsRef.current.connect()
       console.log("[VoiceChat] Connected successfully")
+      if (profileId) {
+        wsRef.current.send(JSON.stringify({ type: "init", profileId }))
+      }
     } catch (error) {
       console.error("[VoiceChat] Failed to connect:", error)
       setConnectionState(ConnectionState.ERROR)
@@ -370,7 +375,7 @@ export function VoiceChat() {
   const hasStarted = messages.length > 0
 
   return (
-    <div className="relative flex h-full w-full flex-col overflow-hidden">
+    <div className="relative flex h-full w-full flex-col overflow-hidden pb-24">
       {/* Header */}
       <AnimatePresence>
         {hasStarted && (
@@ -445,8 +450,8 @@ export function VoiceChat() {
       </div>
 
       {/* Conversation Bar */}
-      <div className="flex w-full items-end justify-center p-4">
-        <Card className="m-0 w-full max-w-4xl gap-0 border p-0 shadow-lg">
+      <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 w-full max-w-4xl px-4">
+        <Card className="m-0 w-full gap-0 border p-0 shadow-xl bg-background/95 backdrop-blur-sm">
           <div className="flex items-center justify-between gap-2 p-2">
             {/* Waveform Display */}
             <div className="h-8 w-[120px] md:h-10">
@@ -496,7 +501,16 @@ export function VoiceChat() {
             </div>
 
             {/* Control Buttons */}
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-6">
+              {profileId && (
+                <Link
+                  href="/agents"
+                  className="hidden items-center gap-2 rounded-lg border border-border/60 bg-background/70 px-3 py-2 text-sm text-muted-foreground transition hover:border-border hover:text-foreground md:flex"
+                >
+                  <Settings2 className="h-4 w-4" />
+                  Edit Agent
+                </Link>
+              )}
               {/* Mic Selector */}
               <MicSelector
                 value={selectedMicDevice}
@@ -507,37 +521,41 @@ export function VoiceChat() {
               />
 
               {/* Button Group for Clear and Start/Stop */}
-              <ButtonGroup orientation="horizontal">
+              <div className="flex items-center gap-3">
                 <Tooltip>
-                  <TooltipTrigger
-                    variant="ghost"
-                    size="icon"
-                    onClick={clearConversation}
-                    disabled={messages.length === 0}
-                  >
-                    <Eraser className="h-5 w-5" />
+                  <TooltipTrigger asChild>
+                    <button
+                      className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground h-10 w-10"
+                      onClick={clearConversation}
+                      disabled={messages.length === 0}
+                    >
+                      <Eraser className="h-5 w-5" />
+                    </button>
                   </TooltipTrigger>
                   <TooltipContent>Clear conversation</TooltipContent>
                 </Tooltip>
 
+                <div className="w-px h-8 bg-border/60" />
+
                 <Tooltip>
-                  <TooltipTrigger
-                    variant="ghost"
-                    size="icon"
-                    onClick={handleStartOrEnd}
-                    disabled={connectionState === ConnectionState.CONNECTING}
-                  >
-                    {isConnected && isRecording ? (
-                      <Pause className="h-5 w-5" />
-                    ) : (
-                      <Play className="h-5 w-5" />
-                    )}
+                  <TooltipTrigger asChild>
+                    <button
+                      className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground h-10 w-10"
+                      onClick={handleStartOrEnd}
+                      disabled={connectionState === ConnectionState.CONNECTING}
+                    >
+                      {isConnected && isRecording ? (
+                        <Pause className="h-5 w-5" />
+                      ) : (
+                        <Play className="h-5 w-5" />
+                      )}
+                    </button>
                   </TooltipTrigger>
                   <TooltipContent>
                     {isConnected && isRecording ? "Stop conversation" : "Start conversation"}
                   </TooltipContent>
                 </Tooltip>
-              </ButtonGroup>
+              </div>
             </div>
           </div>
         </Card>

@@ -30,9 +30,13 @@ import {
   dropdownItemStyles,
   dropdownSectionStyles,
 } from "./dropdown"
-import { PopoverContent, type PopoverContentProps } from "./popover"
+import { Popover, PopoverContent, type PopoverContentProps } from "./popover"
 
-const Menu = (props: MenuTriggerPrimitiveProps) => <MenuTriggerPrimitive {...props} />
+const Menu = (props: MenuTriggerPrimitiveProps) => (
+  <Popover>
+    <MenuTriggerPrimitive {...props} />
+  </Popover>
+)
 
 const MenuSubMenu = ({ delay = 0, ...props }) => (
   <SubmenuTriggerPrimitive {...props} delay={delay}>

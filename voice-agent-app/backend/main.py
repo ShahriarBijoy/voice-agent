@@ -1,44 +1,31 @@
 from fastapi import FastAPI, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
-from config import settings
 from websocket_handler import VoiceAgentWebSocket
-from api.conversations import router as conversations_router
+from api import agents, calendar
+from agents import initialize_tools
 
-app = FastAPI(title="Voice Agent API")
+app = FastAPI()
 
-# Include routers
-app.include_router(conversations_router, prefix="/api", tags=["conversations"])
+@app.on_event("startup")
+async def startup_event():
+    initialize_tools()
 
-# CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.CORS_ORIGINS,
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-@app.get("/")
-async def root():
-    return {
-        "message": "Voice Agent API",
-        "status": "running"
-    }
-
-@app.get("/health")
-async def health():
-    return {"status": "healthy"}
 
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     handler = VoiceAgentWebSocket(websocket)
     await handler.handle_connection()
 
+app.include_router(agents.router, prefix="/api/agents", tags=["agents"])
+app.include_router(calendar.router, tags=["calendar"])
+
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(
-        "main:app",
-        host=settings.HOST,
-        port=settings.PORT,
-        reload=True
-    )
+    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)

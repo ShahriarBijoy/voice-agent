@@ -1,0 +1,68 @@
+{
+  "id": "119d3bc2-e03f-42b2-8f9e-6d1efc1bff52",
+  "title": "Hey, this is a test.",
+  "created_at": "2025-10-28T17:21:58.626735",
+  "updated_at": "2025-10-28T17:21:58.626735",
+  "messages": [
+    {
+      "role": "user",
+      "content": "Hey, this is a test.",
+      "timestamp": "2025-10-28T17:20:30.254287"
+    },
+    {
+      "role": "assistant",
+      "content": "Hello! Is there anything specific you'd like to test or talk about?",
+      "timestamp": "2025-10-28T17:20:33.396447"
+    },
+    {
+      "role": "user",
+      "content": "Yeah, um, just testing my UI, if it works.",
+      "timestamp": "2025-10-28T17:20:43.818691"
+    },
+    {
+      "role": "assistant",
+      "content": "Got it! Let me know if you need any help or have questions while you're testing.",
+      "timestamp": "2025-10-28T17:20:44.652748"
+    },
+    {
+      "role": "user",
+      "content": "No, I'm just checking if it does the auto-scrolling thing.",
+      "timestamp": "2025-10-28T17:20:58.818158"
+    },
+    {
+      "role": "assistant",
+      "content": "Alright, sounds good. Let me know if everything's working as expected or if you need any assistance.",
+      "timestamp": "2025-10-28T17:21:01.828489"
+    },
+    {
+      "role": "user",
+      "content": "I hope it works.",
+      "timestamp": "2025-10-28T17:21:14.521119"
+    },
+    {
+      "role": "assistant",
+      "content": "Fingers crossed! Let me know how it goes.",
+      "timestamp": "2025-10-28T17:21:15.330382"
+    },
+    {
+      "role": "user",
+      "content": "Currently, maybe auto-scrolling is not working.",
+      "timestamp": "2025-10-28T17:21:23.558545"
+    },
+    {
+      "role": "assistant",
+      "content": "That's frustrating. Sometimes, a quick refresh or checking your settings might help. Would you like some tips on troubleshooting?",
+      "timestamp": "2025-10-28T17:21:26.284107"
+    },
+    {
+      "role": "user",
+      "content": "Yeah, that'd be great.",
+      "timestamp": "2025-10-28T17:21:41.091228"
+    },
+    {
+      "role": "assistant",
+      "content": "First, try refreshing the page to see if it resolves the issue. If that doesn't work, check your browser settings to ensure auto-scrolling is enabled. Also, make sure your browser and any extensions are up to date. Let me know if you need more help!",
+      "timestamp": "2025-10-28T17:21:43.580855"
+    }
+  ]
+}

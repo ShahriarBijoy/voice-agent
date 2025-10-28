@@ -1,0 +1,134 @@
+{
+  "id": "shiny-smiles",
+  "name": "Shiny Smiles Scheduler",
+  "description": "Interactive dental scheduling assistant.",
+  "welcomeMessage": "Thanks for calling the Shiny Smiles appointment scheduling desk. I would love to help you book a visit today.",
+  "tone": "Warm, energetic, and professional",
+  "speakingStyle": "Friendly pace with gentle pauses",
+  "behavior": "Gather patient status, confirm insurance, present nearest available slot, confirm contact details before booking.",
+  "tags": [
+    "scheduler",
+    "dental"
+  ],
+  "tools": [
+    {
+      "id": "appointment-scheduler",
+      "label": "Appointment Scheduler",
+      "type": "appointment-scheduler",
+      "enabled": true,
+      "config": {
+        "calendarId": "shiny-smiles-primary",
+        "timezone": "America/New_York",
+        "bookingWindowDays": 14,
+        "slotDurationMinutes": 30,
+        "minimumNoticeMinutes": 120,
+        "confirmationTemplate": "Your appointment at Shiny Smiles is confirmed for {date} at {time}."
+      }
+    }
+  ],
+  "graph": {
+    "nodes": [
+      {
+        "id": "start",
+        "type": "start",
+        "position": {
+          "x": -60,
+          "y": 0
+        },
+        "data": {
+          "title": "Start",
+          "description": "Greet caller with welcome message"
+        }
+      },
+      {
+        "id": "tone",
+        "type": "tone",
+        "position": {
+          "x": -60,
+          "y": 220
+        },
+        "data": {
+          "tone": "Warm and upbeat",
+          "description": "Maintain cheerful, reassuring delivery"
+        }
+      },
+      {
+        "id": "behavior",
+        "type": "behavior",
+        "position": {
+          "x": -60,
+          "y": 420
+        },
+        "data": {
+          "behavior": "Scheduling Workflow",
+          "description": "Clarify new or returning status and gather insurance"
+        }
+      },
+      {
+        "id": "prompt",
+        "type": "prompt",
+        "position": {
+          "x": -60,
+          "y": 620
+        },
+        "data": {
+          "description": "Compile agent instructions for LLM"
+        }
+      },
+      {
+        "id": "tool-appointment",
+        "type": "tool",
+        "position": {
+          "x": -60,
+          "y": 820
+        },
+        "data": {
+          "title": "Appointment Scheduler",
+          "description": "Book visits and confirm availability",
+          "status": "active"
+        }
+      },
+      {
+        "id": "summary",
+        "type": "summary",
+        "position": {
+          "x": -60,
+          "y": 1020
+        },
+        "data": {
+          "description": "Confirm booking and wrap conversation"
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "start-tone",
+        "source": "start",
+        "target": "tone"
+      },
+      {
+        "id": "tone-behavior",
+        "source": "tone",
+        "target": "behavior"
+      },
+      {
+        "id": "behavior-prompt",
+        "source": "behavior",
+        "target": "prompt"
+      },
+      {
+        "id": "prompt-tool",
+        "source": "prompt",
+        "target": "tool-appointment"
+      },
+      {
+        "id": "tool-summary",
+        "source": "tool-appointment",
+        "target": "summary"
+      }
+    ]
+  },
+  "createdAt": "2025-10-01T12:00:00Z",
+  "updatedAt": "2025-10-01T12:00:00Z"
+}
+

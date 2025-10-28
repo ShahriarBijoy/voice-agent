@@ -1,12 +1,14 @@
 import asyncio
 import json
-from typing import Optional
+from typing import Optional, Dict, Any
 from fastapi import WebSocket, WebSocketDisconnect
 from services.stt_service import SonioxSTTService
 from services.llm_service import LLMService
 from services.tts_service import VogentTTSService
 from models.conversation import ConversationManager
-from utils.prompt_templates import get_prompt
+from models.agent_profile import get_agent_profile
+from services.tool_registry import AgentToolRegistry
+from utils.prompt_templates import compose_prompt
 
 
 class VoiceAgentWebSocket:
@@ -20,6 +22,9 @@ class VoiceAgentWebSocket:
         self.shutdown_event = asyncio.Event()
         self.conversation_saved = False
         self.last_conversation_id: Optional[str] = None
+        self.agent_profile_id: Optional[str] = None
+        self.profile_context: Optional[Dict[str, Any]] = None
+        self.tool_registry = AgentToolRegistry()
 
     async def handle_connection(self):
         """Main WebSocket connection handler"""
@@ -117,6 +122,9 @@ class VoiceAgentWebSocket:
                         await self.save_conversation_and_notify()
                         self.signal_shutdown()
                         break
+                    elif data.get("type") == "init":
+                        profile_id = data.get("profileId")
+                        await self.initialize_profile(profile_id)
             except Exception as e:
                 print(f"Receive error: {e}")
                 await self.save_conversation_and_notify()
@@ -223,45 +231,40 @@ class VoiceAgentWebSocket:
     async def process_user_input(self, text: str):
         """Process user input through LLM and TTS"""
         try:
-            # Clean the text by removing debugging tags
-            clean_text = (text.replace("<end>", "")
-                          .replace("<END>", "").strip())
-            
-            # Add to conversation
-            self.conversation.add_message("user", clean_text)
+            clean_text = text.replace("<end>", "").replace("<END>", "").strip()
+            if not clean_text:
+                return
 
-            # Send to client
+            self.conversation.add_message("user", clean_text)
             await self.websocket.send_json({
                 "type": "user_message",
                 "text": clean_text
             })
 
-            # Get LLM response
-            system_prompt = get_prompt("default")
+            system_prompt = self.compose_system_prompt()
             full_response = ""
+            
+            async for event in self.llm_service.generate_response(clean_text, system_prompt):
+                if event["type"] == "text":
+                    chunk = event["content"]
+                    full_response += chunk
+                    await self.websocket.send_json({
+                        "type": "assistant_chunk",
+                        "text": chunk
+                    })
+                elif event["type"] == "error":
+                    await self.websocket.send_json({
+                        "type": "error",
+                        "message": event["content"]
+                    })
+                    return # Stop processing on error
 
-            # Collect the entire response first
-            async for chunk in self.llm_service.generate_response(
-                clean_text, system_prompt
-            ):
-                full_response += chunk
-                # Stream LLM chunks to client for display
-                await self.websocket.send_json({
-                    "type": "assistant_chunk",
-                    "text": chunk
-                })
-
-            # Add assistant response to conversation
             self.conversation.add_message("assistant", full_response)
-
-            # Send complete assistant message to client
             await self.websocket.send_json({
                 "type": "assistant_message",
                 "text": full_response
             })
 
-            # Now send the COMPLETE response to TTS as a single message
-            # This avoids confusing Vogent with multiple generation IDs
             if full_response.strip():
                 print(f"[TTS] Sending complete response to Vogent: {len(full_response)} chars")
                 await self.tts_service.synthesize_speech(
@@ -277,6 +280,66 @@ class VoiceAgentWebSocket:
                 "type": "error",
                 "message": str(e)
             })
+
+    async def initialize_profile(self, profile_id: Optional[str]):
+        if not profile_id:
+            self.profile_context = None
+            return
+
+        profile = get_agent_profile(profile_id)
+        if not profile:
+            await self.websocket.send_json({
+                "type": "error",
+                "message": "Agent profile not found",
+            })
+            return
+
+        self.agent_profile_id = profile_id
+        self.profile_context = profile.to_dict()
+        await self.websocket.send_json({
+            "type": "profile_loaded",
+            "profile": self.profile_context,
+        })
+
+    def compose_system_prompt(self) -> str:
+        if not self.profile_context:
+            return compose_prompt(
+                tone="Warm and professional",
+                behavior="General helpful assistant",
+                welcome_message="Hello!",
+                speaking_style="Balanced",
+                tool_context="Appointment Scheduler",
+            )
+
+        tool_names = ", ".join(
+            [tool["label"] for tool in self.profile_context.get("tools", []) if tool.get("enabled")]
+        ) or "No additional tools"
+        return compose_prompt(
+            tone=self.profile_context.get("tone", "Warm"),
+            behavior=self.profile_context.get("behavior", ""),
+            welcome_message=self.profile_context.get("welcomeMessage", ""),
+            speaking_style=self.profile_context.get("speakingStyle", ""),
+            tool_context=tool_names,
+        )
+
+    async def evaluate_tools(self, user_input: str) -> Optional[Dict[str, Any]]:
+        if not self.profile_context:
+            return None
+
+        for tool in self.profile_context.get("tools", []):
+            if tool.get("type") == "appointment-scheduler" and tool.get("enabled"):
+                if "appointment" in user_input.lower() or "book" in user_input.lower():
+                    payload = {
+                        "patientName": self.extract_name_from_input(user_input),
+                    }
+                    return await self.tool_registry.execute(tool, payload)
+        return None
+
+    def extract_name_from_input(self, user_input: str) -> str:
+        tokens = user_input.split()
+        if len(tokens) >= 2:
+            return tokens[-1].strip(".!?")
+        return "Patient"
 
     async def tts_loop(self):
         """Receive and forward TTS audio"""
