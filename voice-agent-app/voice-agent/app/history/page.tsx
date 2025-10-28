@@ -216,7 +216,6 @@ export default function HistoryPage() {
                         key={index}
                         content={message.content}
                         source={message.role === "user" ? "user" : "ai"}
-                        avatar={message.role === "user" ? "You" : "AI"}
                       />
                     ))}
                   </div>

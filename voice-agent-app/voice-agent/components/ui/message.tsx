@@ -2,7 +2,6 @@
 
 import * as React from "react"
 import { cn } from "@/lib/utils"
-import { Avatar } from "@/components/ui/avatar"
 
 export interface MessageProps {
   /**
@@ -13,10 +12,6 @@ export interface MessageProps {
    * The source of the message (user or ai)
    */
   source: "user" | "ai"
-  /**
-   * Optional avatar fallback text
-   */
-  avatar?: string
   /**
    * Optional className for customization
    */
@@ -30,12 +25,10 @@ export interface MessageProps {
 export const Message: React.FC<MessageProps> = ({
   content,
   source,
-  avatar,
   className,
   isStreaming = false,
 }) => {
   const isUser = source === "user"
-  const avatarText = avatar || (isUser ? "You" : "AI")
 
   return (
     <div
@@ -45,14 +38,6 @@ export const Message: React.FC<MessageProps> = ({
         className
       )}
     >
-      {!isUser && (
-        <Avatar 
-          className="h-8 w-8 shrink-0"
-          initials={avatarText}
-          size="sm"
-        />
-      )}
-
       <div
         className={cn(
           "max-w-[80%] rounded-lg px-4 py-2",

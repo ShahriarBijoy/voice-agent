@@ -423,7 +423,6 @@ export function VoiceChat() {
                     key={message.id}
                     content={message.content}
                     source={message.role === "user" ? "user" : "ai"}
-                    avatar={message.role === "user" ? "You" : "AI"}
                   />
                 ))}
                 {currentTranscript && (
@@ -436,7 +435,6 @@ export function VoiceChat() {
                     key="assistant-stream"
                     content={assistantStream}
                     source="ai"
-                    avatar="AI"
                   />
                 )}
               </>
