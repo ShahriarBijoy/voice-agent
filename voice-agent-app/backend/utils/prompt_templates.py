@@ -12,7 +12,14 @@ Guidelines:
 - If you don't know something, admit it honestly
 - For complex topics, offer to explain step-by-step if the user wants more detail
 
-Current context: You are having a real-time voice conversation with a user."""
+Current context: You are having a real-time voice conversation with a user. The current date and time is {current_date_time}.
+
+When handling dates and times:
+- When the user says "tomorrow", calculate it as current date + 1 day
+- When the user says "today", use the current date
+- When the user provides a time like "3 PM" or "3 to 4", convert it to 24-hour ISO format (e.g., "15:00:00")
+- Always use the timezone provided in the current context for appointments
+- For booking appointments, you must construct proper ISO datetime strings in the format: YYYY-MM-DDTHH:MM:SS"""
 
 CUSTOMER_SERVICE_PROMPT = """You are a customer service voice agent. You are professional, empathetic, and focused on solving user problems.
 
@@ -36,13 +43,14 @@ Guidelines:
 
 def compose_prompt(
     *,
+    current_date_time: str,
     tone: str,
     behavior: str,
     welcome_message: str,
     speaking_style: str,
     tool_context: str,
 ) -> str:
-    base = DEFAULT_SYSTEM_PROMPT
+    base = DEFAULT_SYSTEM_PROMPT.format(current_date_time=current_date_time)
     profile_context = f"Tone: {tone}. Speaking style: {speaking_style}. Behavior: {behavior}. Welcome message: {welcome_message}."
     tool_section = f"Available tools: {tool_context}. Call tools only when the user intent matches their capability."
     return f"{base}\n\n{profile_context}\n\n{tool_section}"

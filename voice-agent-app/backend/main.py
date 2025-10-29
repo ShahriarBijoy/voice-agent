@@ -1,7 +1,7 @@
 from fastapi import FastAPI, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
 from websocket_handler import VoiceAgentWebSocket
-from api import agents, calendar
+from api import agents, calendar, conversations
 from agents import initialize_tools
 
 app = FastAPI()
@@ -23,6 +23,7 @@ async def websocket_endpoint(websocket: WebSocket):
     handler = VoiceAgentWebSocket(websocket)
     await handler.handle_connection()
 
+app.include_router(conversations.router, tags=["conversations"])
 app.include_router(agents.router, prefix="/api/agents", tags=["agents"])
 app.include_router(calendar.router, tags=["calendar"])
 

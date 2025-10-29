@@ -80,22 +80,27 @@ class LLMService:
                     tool_name = tool_call["function"]["name"]
                     tool_to_call = tool_registry.get_tool(tool_name)
                     tool_args = json.loads(tool_call["function"]["arguments"])
-                    
+
                     tool_result = await tool_to_call.run(**tool_args)
-                    
-                    tool_messages.append({
-                        "tool_call_id": tool_call["id"],
-                        "role": "tool",
-                        "name": tool_name,
-                        "content": str(tool_result),
-                    })
+
+                    tool_messages.append(
+                        {
+                            "tool_call_id": tool_call["id"],
+                            "role": "tool",
+                            "name": tool_name,
+                            "content": str(tool_result),
+                        }
+                    )
                 
                 self.conversation_history.extend(tool_messages)
 
                 # Now, get the final response from the LLM after providing tool results
                 final_stream = await self.client.chat.completions.create(
                     model=settings.OPENAI_MODEL,
-                    messages=[{"role": "system", "content": system_prompt}] + self.conversation_history,
+                    messages=[
+                        {"role": "system", "content": system_prompt}
+                    ]
+                    + self.conversation_history,
                     stream=True,
                 )
 
@@ -105,9 +110,11 @@ class LLMService:
                         content = final_chunk.choices[0].delta.content
                         final_full_response += content
                         yield {"type": "text", "content": content}
-                
+
                 # Add final assistant response to history
-                self.conversation_history.append({"role": "assistant", "content": final_full_response})
+                self.conversation_history.append(
+                    {"role": "assistant", "content": final_full_response}
+                )
 
         except Exception as e:
             print(f"LLM error: {e}")

@@ -1,0 +1,33 @@
+{
+  "id": "a2eb0fc1-aadb-4706-8439-3833020a6054",
+  "title": "Hey, can you hear me?",
+  "created_at": "2025-10-29T17:13:46.159519",
+  "updated_at": "2025-10-29T17:13:46.159519",
+  "messages": [
+    {
+      "role": "user",
+      "content": "Hey, can you hear me?",
+      "timestamp": "2025-10-29T17:12:41.021853"
+    },
+    {
+      "role": "assistant",
+      "content": "Hello! Yes, I can hear you. How can I assist you today?",
+      "timestamp": "2025-10-29T17:12:42.385825"
+    },
+    {
+      "role": "user",
+      "content": "I'm just trying to figure out how to reduce the noise.",
+      "timestamp": "2025-10-29T17:12:53.796567"
+    },
+    {
+      "role": "assistant",
+      "content": "Reducing noise can be achieved in a few ways depending on the source. If it's external noise, consider soundproofing options like sealing windows or using heavy curtains. For internal noise, using carpets or rugs and rearranging furniture can help absorb sound. Would you like more specific tips?",
+      "timestamp": "2025-10-29T17:13:03.954095"
+    },
+    {
+      "role": "user",
+      "content": "No, it's not working.",
+      "timestamp": "2025-10-29T17:13:31.216227"
+    }
+  ]
+}

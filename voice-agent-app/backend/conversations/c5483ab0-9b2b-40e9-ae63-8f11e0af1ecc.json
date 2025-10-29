@@ -1,0 +1,38 @@
+{
+  "id": "c5483ab0-9b2b-40e9-ae63-8f11e0af1ecc",
+  "title": "Hey, how are you doing?",
+  "created_at": "2025-10-29T16:02:15.252158",
+  "updated_at": "2025-10-29T16:02:15.252158",
+  "messages": [
+    {
+      "role": "user",
+      "content": "Hey, how are you doing?",
+      "timestamp": "2025-10-29T16:01:33.666305"
+    },
+    {
+      "role": "assistant",
+      "content": "Hello! I'm doing great, thanks for asking. How can I assist you today?",
+      "timestamp": "2025-10-29T16:01:35.373489"
+    },
+    {
+      "role": "user",
+      "content": "Can you check my calendar?",
+      "timestamp": "2025-10-29T16:01:43.906138"
+    },
+    {
+      "role": "assistant",
+      "content": "I'm sorry, but I can't access your calendar at the moment. If you'd like, I can help you with something else or try again later.",
+      "timestamp": "2025-10-29T16:01:47.192374"
+    },
+    {
+      "role": "user",
+      "content": "Is there an event in my calendar today?",
+      "timestamp": "2025-10-29T16:02:01.576115"
+    },
+    {
+      "role": "assistant",
+      "content": "I'm sorry, I couldn't check your calendar right now. If you want, you can try opening your calendar app directly to take a look at your events for today. ",
+      "timestamp": "2025-10-29T16:02:05.683595"
+    }
+  ]
+}

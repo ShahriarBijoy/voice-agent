@@ -1,0 +1,48 @@
+{
+  "id": "7982d153-a405-4f08-b6b9-a8791fd5151b",
+  "title": "Hey, can you hear me?",
+  "created_at": "2025-10-29T17:14:52.083355",
+  "updated_at": "2025-10-29T17:14:52.083355",
+  "messages": [
+    {
+      "role": "user",
+      "content": "Hey, can you hear me?",
+      "timestamp": "2025-10-29T17:14:06.750921"
+    },
+    {
+      "role": "assistant",
+      "content": "Hello! Yes, I can hear you. How can I assist you today?",
+      "timestamp": "2025-10-29T17:14:07.729236"
+    },
+    {
+      "role": "user",
+      "content": "Can you check my calendar?",
+      "timestamp": "2025-10-29T17:14:15.896199"
+    },
+    {
+      "role": "assistant",
+      "content": "Sure, would you like me to check for events today or on a specific date?",
+      "timestamp": "2025-10-29T17:14:17.010822"
+    },
+    {
+      "role": "user",
+      "content": "Check for today.",
+      "timestamp": "2025-10-29T17:14:24.853218"
+    },
+    {
+      "role": "assistant",
+      "content": "Today, you have a Q4 Planning Session scheduled from 10:00 AM to 12:30 PM. Is there anything else you need help with?\n",
+      "timestamp": "2025-10-29T17:14:29.321256"
+    },
+    {
+      "role": "user",
+      "content": "No, thanks.",
+      "timestamp": "2025-10-29T17:14:42.561952"
+    },
+    {
+      "role": "assistant",
+      "content": "You're welcome! If you need anything else, just let me know.",
+      "timestamp": "2025-10-29T17:14:43.663499"
+    }
+  ]
+}

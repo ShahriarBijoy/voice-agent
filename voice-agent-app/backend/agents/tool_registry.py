@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Type
+from typing import Any, Dict, List
 
 class Tool(ABC):
     """Abstract base class for all tools."""
@@ -53,17 +53,7 @@ class ToolRegistry:
 
     def get_tool_schemas(self) -> List[Dict[str, Any]]:
         """Returns the schemas of all registered tools."""
-        return [
-            {
-                "type": "function",
-                "function": {
-                    "name": tool.name,
-                    "description": tool.description,
-                    "parameters": tool.schema,
-                },
-            }
-            for tool in self._tools.values()
-        ]
+        return [tool.schema for tool in self._tools.values()]
 
 # Global instance of the tool registry
 tool_registry = ToolRegistry()

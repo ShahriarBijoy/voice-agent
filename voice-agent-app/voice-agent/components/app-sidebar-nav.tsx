@@ -30,6 +30,19 @@ export default function AppSidebarNav() {
         </>
       )
     }
+    if (pathname === "/calendar") {
+      return (
+        <>
+          <BreadcrumbItem>
+            <BreadcrumbLink href="/">Conversation</BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage>Calendar</BreadcrumbPage>
+          </BreadcrumbItem>
+        </>
+      )
+    }
     if (pathname?.startsWith("/agents")) {
       return (
         <>

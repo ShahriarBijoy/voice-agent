@@ -6,6 +6,7 @@ import {
   Clock,
   Podcast,
   Pickaxe,
+  Calendar,
 } from "lucide-react"
 
 import { NavUser } from "@/components/nav-user"
@@ -34,6 +35,11 @@ const navItems = [
     title: "History",
     url: "/history",
     icon: Clock,
+  },
+  {
+    title: "Calendar",
+    url: "/calendar",
+    icon: Calendar,
   },
   {
     title: "Agent Builder",

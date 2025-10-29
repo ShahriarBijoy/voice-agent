@@ -10,6 +10,8 @@ DEMO_CALENDAR_DATA = [
   {
     "id": "evt_1",
     "title": "Project Titan Kick-off",
+    "description": "Initial meeting to kick off the Project Titan development.",
+    "location": "Virtual / Zoom",
     "startTime": "2025-10-28T09:00:00",
     "endTime": "2025-10-28T10:00:00",
     "participants": ["user@example.com", "teammate1@example.com"],
@@ -17,6 +19,8 @@ DEMO_CALENDAR_DATA = [
   {
     "id": "evt_2",
     "title": "Weekly Sync",
+    "description": "Team weekly sync meeting.",
+    "location": "Conference Room 4B",
     "startTime": "2025-10-28T11:30:00",
     "endTime": "2025-10-28T12:00:00",
     "participants": ["user@example.com", "teammate2@example.com", "manager@example.com"],
@@ -24,6 +28,8 @@ DEMO_CALENDAR_DATA = [
   {
     "id": "evt_3",
     "title": "Dentist Appointment",
+    "description": "Annual dental check-up.",
+    "location": "Downtown Dental Clinic",
     "startTime": "2025-10-28T15:00:00",
     "endTime": "2025-10-28T16:00:00",
     "participants": ["user@example.com"],
@@ -31,6 +37,8 @@ DEMO_CALENDAR_DATA = [
   {
     "id": "evt_4",
     "title": "Q4 Planning Session",
+    "description": "Planning session for the upcoming quarter.",
+    "location": "Virtual / Teams",
     "startTime": "2025-10-29T10:00:00",
     "endTime": "2025-10-29T12:30:00",
     "participants": ["user@example.com", "teammate1@example.com", "manager@example.com"],
@@ -40,6 +48,16 @@ DEMO_CALENDAR_DATA = [
 class CalendarEvent(BaseModel):
     id: str
     title: str
+    description: Optional[str] = None
+    location: Optional[str] = None
+    startTime: datetime
+    endTime: datetime
+    participants: List[str]
+
+class CalendarEventCreate(BaseModel):
+    title: str
+    description: Optional[str] = None
+    location: Optional[str] = None
     startTime: datetime
     endTime: datetime
     participants: List[str]
@@ -64,5 +82,24 @@ async def get_calendar_events(date: Optional[str] = None):
             return events
             
     return events
+
+
+@router.post("/api/calendar", response_model=CalendarEvent)
+async def create_calendar_event(event: CalendarEventCreate):
+    """
+    Create a new calendar event.
+    """
+    new_event_dict = event.dict()
+    new_event_dict["id"] = f"evt_{len(DEMO_CALENDAR_DATA) + 1}"
+    
+    # In a real application, you would save this to a database.
+    # For this demo, we just append it to our in-memory list.
+    DEMO_CALENDAR_DATA.append(new_event_dict)
+    
+    # We need to convert it back to a Pydantic model to ensure it matches
+    # the response_model.
+    created_event = CalendarEvent(**new_event_dict)
+    
+    return created_event
 
 

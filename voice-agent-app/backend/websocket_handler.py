@@ -1,13 +1,14 @@
 import asyncio
 import json
 from typing import Optional, Dict, Any
+from datetime import datetime
+from zoneinfo import ZoneInfo
 from fastapi import WebSocket, WebSocketDisconnect
 from services.stt_service import SonioxSTTService
 from services.llm_service import LLMService
 from services.tts_service import VogentTTSService
 from models.conversation import ConversationManager
 from models.agent_profile import get_agent_profile
-from services.tool_registry import AgentToolRegistry
 from utils.prompt_templates import compose_prompt
 
 
@@ -24,7 +25,6 @@ class VoiceAgentWebSocket:
         self.last_conversation_id: Optional[str] = None
         self.agent_profile_id: Optional[str] = None
         self.profile_context: Optional[Dict[str, Any]] = None
-        self.tool_registry = AgentToolRegistry()
 
     async def handle_connection(self):
         """Main WebSocket connection handler"""
@@ -244,20 +244,20 @@ class VoiceAgentWebSocket:
             system_prompt = self.compose_system_prompt()
             full_response = ""
             
-            async for event in self.llm_service.generate_response(clean_text, system_prompt):
+            async for event in self.llm_service.generate_response(
+                clean_text, system_prompt
+            ):
                 if event["type"] == "text":
                     chunk = event["content"]
                     full_response += chunk
-                    await self.websocket.send_json({
-                        "type": "assistant_chunk",
-                        "text": chunk
-                    })
+                    await self.websocket.send_json(
+                        {"type": "assistant_chunk", "text": chunk}
+                    )
                 elif event["type"] == "error":
-                    await self.websocket.send_json({
-                        "type": "error",
-                        "message": event["content"]
-                    })
-                    return # Stop processing on error
+                    await self.websocket.send_json(
+                        {"type": "error", "message": event["content"]}
+                    )
+                    return  # Stop processing on error
 
             self.conversation.add_message("assistant", full_response)
             await self.websocket.send_json({
@@ -302,8 +302,14 @@ class VoiceAgentWebSocket:
         })
 
     def compose_system_prompt(self) -> str:
+        # Use Central European Time (Berlin timezone)
+        cet_tz = ZoneInfo("Europe/Berlin")
+        current_time = datetime.now(cet_tz)
+        current_time_str = current_time.strftime("%A, %B %d, %Y at %H:%M:%S (Central European Time)")
+
         if not self.profile_context:
             return compose_prompt(
+                current_date_time=current_time_str,
                 tone="Warm and professional",
                 behavior="General helpful assistant",
                 welcome_message="Hello!",
@@ -315,6 +321,7 @@ class VoiceAgentWebSocket:
             [tool["label"] for tool in self.profile_context.get("tools", []) if tool.get("enabled")]
         ) or "No additional tools"
         return compose_prompt(
+            current_date_time=current_time_str,
             tone=self.profile_context.get("tone", "Warm"),
             behavior=self.profile_context.get("behavior", ""),
             welcome_message=self.profile_context.get("welcomeMessage", ""),
@@ -323,16 +330,8 @@ class VoiceAgentWebSocket:
         )
 
     async def evaluate_tools(self, user_input: str) -> Optional[Dict[str, Any]]:
-        if not self.profile_context:
-            return None
-
-        for tool in self.profile_context.get("tools", []):
-            if tool.get("type") == "appointment-scheduler" and tool.get("enabled"):
-                if "appointment" in user_input.lower() or "book" in user_input.lower():
-                    payload = {
-                        "patientName": self.extract_name_from_input(user_input),
-                    }
-                    return await self.tool_registry.execute(tool, payload)
+        # This method is now obsolete as tool evaluation is handled by the LLM service
+        # It can be removed.
         return None
 
     def extract_name_from_input(self, user_input: str) -> str:

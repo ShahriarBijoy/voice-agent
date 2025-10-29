@@ -5,7 +5,7 @@ import json
 router = APIRouter()
 
 
-@router.get("/conversations")
+@router.get("/api/conversations")
 async def get_conversations():
     """Get list of all conversations"""
     try:
@@ -40,7 +40,7 @@ async def get_conversations():
                           detail="Failed to fetch conversations")
 
 
-@router.get("/conversations/{conversation_id}")
+@router.get("/api/conversations/{conversation_id}")
 async def get_conversation(conversation_id: str):
     """Get a specific conversation by ID"""
     try:
@@ -61,7 +61,7 @@ async def get_conversation(conversation_id: str):
                           detail="Failed to fetch conversation")
 
 
-@router.delete("/conversations/{conversation_id}")
+@router.delete("/api/conversations/{conversation_id}")
 async def delete_conversation(conversation_id: str):
     """Delete a specific conversation by ID"""
     try:
