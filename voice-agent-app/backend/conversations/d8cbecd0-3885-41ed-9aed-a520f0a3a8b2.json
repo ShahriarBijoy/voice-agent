@@ -1,0 +1,18 @@
+{
+  "id": "d8cbecd0-3885-41ed-9aed-a520f0a3a8b2",
+  "title": "Hey, can you hear me?",
+  "created_at": "2025-10-29T20:29:42.775885",
+  "updated_at": "2025-10-29T20:29:42.775885",
+  "messages": [
+    {
+      "role": "user",
+      "content": "Hey, can you hear me?",
+      "timestamp": "2025-10-29T20:29:35.600992"
+    },
+    {
+      "role": "assistant",
+      "content": "Hello! Yes, I can hear you. How can I assist you today?",
+      "timestamp": "2025-10-29T20:29:37.169489"
+    }
+  ]
+}

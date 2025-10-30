@@ -1,0 +1,88 @@
+{
+  "id": "b3abcabe-0087-4f74-ac8b-c17a2005d282",
+  "title": "Hej, can you hear me?",
+  "created_at": "2025-10-29T19:23:52.458990",
+  "updated_at": "2025-10-29T19:23:52.458990",
+  "messages": [
+    {
+      "role": "user",
+      "content": "Hej, can you hear me?",
+      "timestamp": "2025-10-29T19:21:57.696559"
+    },
+    {
+      "role": "assistant",
+      "content": "Hello! Yes, I can hear you. How can I assist you today?",
+      "timestamp": "2025-10-29T19:21:59.528585"
+    },
+    {
+      "role": "user",
+      "content": "Uh, can you check my calendar?",
+      "timestamp": "2025-10-29T19:22:06.651069"
+    },
+    {
+      "role": "assistant",
+      "content": "Sure, would you like me to check for any specific date or just today?",
+      "timestamp": "2025-10-29T19:22:08.217793"
+    },
+    {
+      "role": "user",
+      "content": "Ja, uh, can you check for today if I have any event?",
+      "timestamp": "2025-10-29T19:22:21.543422"
+    },
+    {
+      "role": "assistant",
+      "content": "Today, you have a Q4 Planning Session from 10:00 AM to 12:30 PM. Anything else you need help with?",
+      "timestamp": "2025-10-29T19:22:24.415467"
+    },
+    {
+      "role": "user",
+      "content": "Uh, can you add an event for tomorrow?",
+      "timestamp": "2025-10-29T19:22:37.814879"
+    },
+    {
+      "role": "assistant",
+      "content": "Sure, I can help with that. What would you like to name the event, and what time should it start and end?",
+      "timestamp": "2025-10-29T19:22:40.081681"
+    },
+    {
+      "role": "user",
+      "content": "The name of the event should be 'QM Meeting' and the time is at 3 to 4.",
+      "timestamp": "2025-10-29T19:22:54.428311"
+    },
+    {
+      "role": "assistant",
+      "content": "Would you like to schedule this event for today or another day?",
+      "timestamp": "2025-10-29T19:22:56.303805"
+    },
+    {
+      "role": "user",
+      "content": "And the location is at UniBremen.",
+      "timestamp": "2025-10-29T19:22:56.777107"
+    },
+    {
+      "role": "assistant",
+      "content": "Could you please provide me with the details of the appointment you would like to book at UniBremen? I'll need the title, date, and time to get started.",
+      "timestamp": "2025-10-29T19:22:58.340425"
+    },
+    {
+      "role": "user",
+      "content": "The title is 'QM Meeting', the date is tomorrow, and the time is 3 to 4.",
+      "timestamp": "2025-10-29T19:23:17.010685"
+    },
+    {
+      "role": "assistant",
+      "content": "I'll schedule the \"QM Meeting\" for tomorrow from 3 PM to 4 PM. Let me confirm the details for you.Your \"QM Meeting\" is successfully booked for tomorrow, October 30th, from 3 PM to 4 PM. Let me know if there's anything else you need!",
+      "timestamp": "2025-10-29T19:23:21.303876"
+    },
+    {
+      "role": "user",
+      "content": "No, thanks, just book the event.",
+      "timestamp": "2025-10-29T19:23:43.593258"
+    },
+    {
+      "role": "assistant",
+      "content": "Could you please tell me the title, time, and date for the event you'd like to book? If you have any other details like location or participants, feel free to share those too.",
+      "timestamp": "2025-10-29T19:23:45.026133"
+    }
+  ]
+}

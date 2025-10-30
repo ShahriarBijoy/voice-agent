@@ -5,7 +5,7 @@ from datetime import datetime
 from zoneinfo import ZoneInfo
 from fastapi import WebSocket, WebSocketDisconnect
 from services.stt_service import SonioxSTTService
-from services.llm_service import LLMService
+from services.smolagent_service import SmolAgentService
 from services.tts_service import VogentTTSService
 from models.conversation import ConversationManager
 from models.agent_profile import get_agent_profile
@@ -16,7 +16,7 @@ class VoiceAgentWebSocket:
     def __init__(self, websocket: WebSocket):
         self.websocket = websocket
         self.stt_service = SonioxSTTService()
-        self.llm_service = LLMService()
+        self.llm_service = SmolAgentService()
         self.tts_service = VogentTTSService()
         self.conversation = ConversationManager()
         self.is_processing = False

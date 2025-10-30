@@ -1,0 +1,18 @@
+{
+  "id": "115dd374-856b-4e2c-a3a2-c35b44e57c6f",
+  "title": "Hey there!",
+  "created_at": "2025-10-30T16:13:48.715356",
+  "updated_at": "2025-10-30T16:13:48.715356",
+  "messages": [
+    {
+      "role": "user",
+      "content": "Hey there!",
+      "timestamp": "2025-10-30T16:12:26.183116"
+    },
+    {
+      "role": "user",
+      "content": "Hello, can you hear me?",
+      "timestamp": "2025-10-30T16:12:53.087221"
+    }
+  ]
+}

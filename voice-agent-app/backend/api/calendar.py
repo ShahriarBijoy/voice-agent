@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 from typing import List, Optional
 from datetime import datetime
@@ -62,6 +62,14 @@ class CalendarEventCreate(BaseModel):
     endTime: datetime
     participants: List[str]
 
+class CalendarEventUpdate(BaseModel):
+    title: Optional[str] = None
+    description: Optional[str] = None
+    location: Optional[str] = None
+    startTime: Optional[datetime] = None
+    endTime: Optional[datetime] = None
+    participants: Optional[List[str]] = None
+
 @router.get("/api/calendar", response_model=List[CalendarEvent])
 async def get_calendar_events(date: Optional[str] = None):
     """
@@ -102,4 +110,36 @@ async def create_calendar_event(event: CalendarEventCreate):
     
     return created_event
 
+
+@router.put("/api/calendar/{event_id}", response_model=CalendarEvent)
+async def update_calendar_event(event_id: str, event: CalendarEventUpdate):
+    """
+    Update an existing calendar event.
+    """
+    # Find event by id
+    idx = next((i for i, e in enumerate(DEMO_CALENDAR_DATA) if e.get("id") == event_id), None)
+    if idx is None:
+        raise HTTPException(status_code=404, detail="Event not found")
+
+    existing = DEMO_CALENDAR_DATA[idx]
+    update_data = event.dict(exclude_unset=True)
+
+    # Merge update
+    merged = { **existing, **update_data }
+    DEMO_CALENDAR_DATA[idx] = merged
+
+    return CalendarEvent(**merged)
+
+
+@router.delete("/api/calendar/{event_id}")
+async def delete_calendar_event(event_id: str):
+    """
+    Delete a calendar event by id.
+    """
+    idx = next((i for i, e in enumerate(DEMO_CALENDAR_DATA) if e.get("id") == event_id), None)
+    if idx is None:
+        raise HTTPException(status_code=404, detail="Event not found")
+
+    DEMO_CALENDAR_DATA.pop(idx)
+    return {"status": "ok"}
 

@@ -1,5 +1,6 @@
 "use client"
 
+import { useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -32,26 +33,57 @@ type EventFormData = z.infer<typeof eventSchema>;
 interface AddEventDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  onEventAdd: (event: EventFormData) => void;
+  onEventAdd?: (event: EventFormData) => void;
+  onEventEdit?: (event: EventFormData) => void;
   defaultDate?: Date;
+  mode?: "add" | "edit";
+  initialValues?: Partial<EventFormData>;
 }
 
-export function AddEventDialog({ isOpen, onClose, onEventAdd, defaultDate }: AddEventDialogProps) {
+export function AddEventDialog({ isOpen, onClose, onEventAdd, onEventEdit, defaultDate, mode = "add", initialValues }: AddEventDialogProps) {
   const {
     register,
     handleSubmit,
     control,
     formState: { errors },
+    reset,
   } = useForm<EventFormData>({
     resolver: zodResolver(eventSchema),
     defaultValues: {
-      startTime: defaultDate?.toISOString().slice(0, 16),
-      endTime: defaultDate ? new Date(defaultDate.getTime() + 60 * 60 * 1000).toISOString().slice(0, 16) : undefined,
+      title: initialValues?.title ?? "",
+      description: initialValues?.description ?? "",
+      location: initialValues?.location ?? "",
+      startTime: initialValues?.startTime ?? defaultDate?.toISOString().slice(0, 16),
+      endTime:
+        initialValues?.endTime ??
+        (defaultDate
+          ? new Date(defaultDate.getTime() + 60 * 60 * 1000)
+              .toISOString()
+              .slice(0, 16)
+          : undefined),
     },
   });
 
+  useEffect(() => {
+    // keep form in sync when switching between add/edit or changing the selected event
+    reset({
+      title: initialValues?.title ?? "",
+      description: initialValues?.description ?? "",
+      location: initialValues?.location ?? "",
+      startTime: initialValues?.startTime ?? defaultDate?.toISOString().slice(0, 16),
+      endTime:
+        initialValues?.endTime ??
+        (defaultDate
+          ? new Date(defaultDate.getTime() + 60 * 60 * 1000)
+              .toISOString()
+              .slice(0, 16)
+          : undefined),
+    })
+  }, [reset, initialValues, defaultDate, mode])
+
   const onSubmit = (data: EventFormData) => {
-    onEventAdd(data);
+    if (mode === "edit" && onEventEdit) onEventEdit(data)
+    else if (onEventAdd) onEventAdd(data)
     onClose();
   };
 
@@ -59,7 +91,7 @@ export function AddEventDialog({ isOpen, onClose, onEventAdd, defaultDate }: Add
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Add New Event</DialogTitle>
+          <DialogTitle>{mode === "edit" ? "Edit Event" : "Add New Event"}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="grid gap-2">
@@ -91,7 +123,7 @@ export function AddEventDialog({ isOpen, onClose, onEventAdd, defaultDate }: Add
             <Button type="button" variant="ghost" onClick={onClose}>
               Cancel
             </Button>
-            <Button type="submit">Add Event</Button>
+            <Button type="submit">{mode === "edit" ? "Save Changes" : "Add Event"}</Button>
           </DialogFooter>
         </form>
       </DialogContent>

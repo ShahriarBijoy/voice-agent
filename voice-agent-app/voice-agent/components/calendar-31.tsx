@@ -46,11 +46,31 @@ async function addEvent(eventData: Omit<CalendarEvent, "id">): Promise<CalendarE
   return response.json();
 }
 
+async function deleteEvent(eventId: string): Promise<{ success: boolean }> {
+  const response = await fetch(`/api/calendar/${eventId}`, { method: 'DELETE' })
+  if (!response.ok) throw new Error('Failed to delete event')
+  return { success: true }
+}
+
+async function updateEvent(
+  eventId: string,
+  eventData: Omit<CalendarEvent, "id">
+): Promise<CalendarEvent> {
+  const response = await fetch(`/api/calendar/${eventId}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ ...eventData, participants: ["user@example.com"] }),
+  })
+  if (!response.ok) throw new Error('Failed to update event')
+  return response.json()
+}
+
 
 export default function Calendar31() {
   const [date, setDate] = React.useState<Date | undefined>(new Date())
   const [isDialogOpen, setIsDialogOpen] = React.useState(false)
   const [expandedEventId, setExpandedEventId] = React.useState<string | null>(null)
+  const [editingEvent, setEditingEvent] = React.useState<CalendarEvent | null>(null)
   const queryClient = useQueryClient()
   const [isClient, setIsClient] = React.useState(false)
 
@@ -87,24 +107,48 @@ export default function Calendar31() {
     }
   });
 
+  const deleteEventMutation = useMutation({
+    mutationFn: (id: string) => deleteEvent(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['events'] })
+      toast.success('Event deleted')
+    },
+    onError: (error: Error) => {
+      toast.error(`Failed to delete: ${error.message}`)
+    },
+  })
+
+  const updateEventMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Omit<CalendarEvent, 'id'> }) => updateEvent(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['events'] })
+      toast.success('Event updated')
+    },
+    onError: (error: Error) => {
+      toast.error(`Failed to update: ${error.message}`)
+    },
+  })
+
   return (
     <>
       <div className="grid grid-cols-1 lg:grid-cols-[450px_1fr] gap-6 h-full">
         {/* Calendar Section */}
-        <Card className="flex flex-col max-h-[60vh]">
-          <CardContent className="p-6">
-            {isClient ? (
-              <Calendar
-                mode="single"
-                selected={date}
-                onSelect={setDate}
-                onMonthChange={setDate}
-                className="bg-transparent p-0 w-full [&_table]:w-full [&_td]:h-12 [&_td]:w-12 [&_th]:h-10 [&_th]:text-base [&_button]:h-12 [&_button]:w-12 [&_button]:text-base"
-                required
-              />
-            ) : (
-              <div className="w-full h-[400px]" />
-            )}
+        <Card className="flex flex-col max-h-[60vh] overflow-hidden">
+          <CardContent className="p-6 pt-6">
+            <ScrollArea className="flex-1 min-h-0">
+              {isClient ? (
+                <Calendar
+                  mode="single"
+                  selected={date}
+                  onSelect={setDate}
+                  onMonthChange={setDate}
+                  className="bg-transparent p-0 w-full [&_table]:w-full [&_td]:h-12 [&_td]:w-12 [&_th]:h-10 [&_th]:text-base [&_button]:h-12 [&_button]:w-12 [&_button]:text-base"
+                  required
+                />
+              ) : (
+                <div className="w-full h-[400px]" />
+              )}
+            </ScrollArea>
           </CardContent>
         </Card>
 
@@ -246,10 +290,27 @@ export default function Calendar31() {
 
                         {/* Action Buttons */}
                         <div className="flex gap-2">
-                          <Button variant="outline" size="sm" className="flex-1">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="flex-1"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              setEditingEvent(event)
+                              setIsDialogOpen(true)
+                            }}
+                          >
                             Edit Event
                           </Button>
-                          <Button variant="ghost" size="sm" className="flex-1">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="flex-1"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              deleteEventMutation.mutate(event.id)
+                            }}
+                          >
                             Delete
                           </Button>
                         </div>
@@ -265,9 +326,33 @@ export default function Calendar31() {
       
       <AddEventDialog 
         isOpen={isDialogOpen}
-        onClose={() => setIsDialogOpen(false)}
+        onClose={() => {
+          setIsDialogOpen(false)
+          setEditingEvent(null)
+        }}
         onEventAdd={(data) => addEventMutation.mutate(data)}
+        onEventEdit={(data) => {
+          if (!editingEvent) return
+          updateEventMutation.mutate({
+            id: editingEvent.id,
+            data: {
+              title: data.title,
+              description: data.description,
+              location: data.location,
+              startTime: data.startTime,
+              endTime: data.endTime,
+            },
+          })
+        }}
         defaultDate={date}
+        mode={editingEvent ? 'edit' : 'add'}
+        initialValues={editingEvent ? {
+          title: editingEvent.title,
+          description: editingEvent.description,
+          location: editingEvent.location,
+          startTime: editingEvent.startTime?.slice(0,16),
+          endTime: editingEvent.endTime?.slice(0,16),
+        } : undefined}
       />
     </>
   )
