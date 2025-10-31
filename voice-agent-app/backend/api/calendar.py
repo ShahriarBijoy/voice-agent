@@ -76,7 +76,17 @@ async def get_calendar_events(date: Optional[str] = None):
     Get calendar events. If a date is provided, filter events for that day.
     Date should be in YYYY-MM-DD format.
     """
-    events = [CalendarEvent(**evt) for evt in DEMO_CALENDAR_DATA]
+    # Convert stored data to CalendarEvent objects
+    # Handle both datetime objects and ISO strings in stored data
+    events = []
+    for evt in DEMO_CALENDAR_DATA:
+        evt_copy = evt.copy()
+        # Parse ISO strings to datetime if needed
+        if isinstance(evt_copy.get("startTime"), str):
+            evt_copy["startTime"] = datetime.fromisoformat(evt_copy["startTime"].replace('Z', '+00:00'))
+        if isinstance(evt_copy.get("endTime"), str):
+            evt_copy["endTime"] = datetime.fromisoformat(evt_copy["endTime"].replace('Z', '+00:00'))
+        events.append(CalendarEvent(**evt_copy))
     
     if date:
         try:
@@ -100,9 +110,17 @@ async def create_calendar_event(event: CalendarEventCreate):
     new_event_dict = event.dict()
     new_event_dict["id"] = f"evt_{len(DEMO_CALENDAR_DATA) + 1}"
     
+    # Convert datetime objects to ISO strings for storage
+    if isinstance(new_event_dict.get("startTime"), datetime):
+        new_event_dict["startTime"] = new_event_dict["startTime"].isoformat()
+    if isinstance(new_event_dict.get("endTime"), datetime):
+        new_event_dict["endTime"] = new_event_dict["endTime"].isoformat()
+    
     # In a real application, you would save this to a database.
     # For this demo, we just append it to our in-memory list.
     DEMO_CALENDAR_DATA.append(new_event_dict)
+    
+    print(f"✅ Event created: {new_event_dict['title']} on {new_event_dict['startTime']}")
     
     # We need to convert it back to a Pydantic model to ensure it matches
     # the response_model.

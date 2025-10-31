@@ -22,19 +22,23 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import { Badge } from "@/components/ui/badge"
 import { showSessionSavedToast } from "@/components/ui/session-saved-notification"
 import {
   Message as MessageType,
   ConnectionState,
   RecordingState,
   WebSocketMessage,
+  TimingUpdateMessage,
 } from "@/lib/types"
 import { VoiceAgentWebSocket } from "@/lib/websocket-client"
 import { useAgentBuilderState } from "@/lib/agent-profiles"
 import { AudioProcessor, AudioPlayer } from "@/lib/audio-processor"
+import { useQueryClient } from "@tanstack/react-query"
 
 export function VoiceChat() {
   const router = useRouter()
+  const queryClient = useQueryClient()
   const [{ profileId }] = useAgentBuilderState()
   const [messages, setMessages] = useState<MessageType[]>([])
   const [connectionState, setConnectionState] = useState<ConnectionState>(
@@ -141,12 +145,13 @@ export function VoiceChat() {
   }, [currentTranscript, messages.length, resetIdleTimeout])
 
   const addMessage = useCallback(
-    (role: "user" | "assistant", content: string) => {
+    (role: "user" | "assistant", content: string, timing?: {llm_time: number, tts_time: number, total_time: number}) => {
       const message: MessageType = {
         id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
         role,
         content,
         timestamp: new Date(),
+        timing,
       }
       setMessages((prev) => [...prev, message])
     },
@@ -207,11 +212,40 @@ export function VoiceChat() {
         case "assistant_message":
           if (message.text) {
             setAssistantStream("")
-            addMessage("assistant", message.text)
+            addMessage("assistant", message.text, message.timing)
             setAgentState("listening")
             setRecordingState(RecordingState.RECORDING)
           }
           break
+        case "calendar_refresh":
+          // Refresh calendar data in frontend
+          queryClient.invalidateQueries({ queryKey: ['events'] })
+          console.log("[VoiceChat] Calendar data refreshed")
+          break
+        case "timing_update": {
+          // Update the last assistant message's timing with actual TTS time
+          const timingMsg = message as TimingUpdateMessage
+          setMessages((prev) => {
+            const updated = [...prev]
+            // Find the last assistant message
+            for (let i = updated.length - 1; i >= 0; i--) {
+              if (updated[i].role === "assistant" && updated[i].timing) {
+                updated[i] = {
+                  ...updated[i],
+                  timing: {
+                    ...updated[i].timing!,
+                    tts_time: timingMsg.timing.tts_time,
+                    total_time: timingMsg.timing.total_time ?? 
+                      (updated[i].timing!.llm_time + timingMsg.timing.tts_time)
+                  }
+                }
+                break
+              }
+            }
+            return updated
+          })
+          break
+        }
         case "tts_complete":
           // Don't change recording state - keep the session active
           setAgentState("listening")
@@ -236,7 +270,7 @@ export function VoiceChat() {
           break
       }
     },
-    [addMessage, handleViewHistory, resetConversationUI]
+    [addMessage, handleViewHistory, resetConversationUI, queryClient, setMessages]
   )
 
   const handleAudio = useCallback((data: ArrayBuffer) => {
@@ -428,6 +462,7 @@ export function VoiceChat() {
                     key={message.id}
                     content={message.content}
                     source={message.role === "user" ? "user" : "ai"}
+                    timing={message.timing}
                   />
                 ))}
                 {currentTranscript && (

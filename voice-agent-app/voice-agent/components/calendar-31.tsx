@@ -23,8 +23,16 @@ interface CalendarEvent {
   endTime: string;
 }
 
+// Helper to convert Date to local date string without timezone shift
+function dateToLocalString(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
 async function fetchEvents(date: Date): Promise<CalendarEvent[]> {
-  const dateString = date.toISOString().split('T')[0];
+  const dateString = dateToLocalString(date);
   const response = await fetch(`/api/calendar?date=${dateString}`);
   if (!response.ok) {
     throw new Error('Network response was not ok');
@@ -73,9 +81,13 @@ export default function Calendar31() {
   const [editingEvent, setEditingEvent] = React.useState<CalendarEvent | null>(null)
   const queryClient = useQueryClient()
   const [isClient, setIsClient] = React.useState(false)
+  const [timeZone, setTimeZone] = React.useState<string>("")
 
   React.useEffect(() => {
     setIsClient(true)
+    // Detect user's timezone
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone
+    setTimeZone(tz)
   }, [])
 
   const handleEventClick = (eventId: string) => {
@@ -91,7 +103,7 @@ export default function Calendar31() {
   }
 
   const { data: events = [], isLoading } = useQuery<CalendarEvent[]>({
-    queryKey: ['events', date?.toISOString().split('T')[0]],
+    queryKey: ['events', date ? dateToLocalString(date) : null],
     queryFn: () => date ? fetchEvents(date) : Promise.resolve([]),
     enabled: !!date,
   });
@@ -136,12 +148,13 @@ export default function Calendar31() {
         <Card className="flex flex-col max-h-[60vh] overflow-hidden">
           <CardContent className="p-6 pt-6">
             <ScrollArea className="flex-1 min-h-0">
-              {isClient ? (
+              {isClient && timeZone ? (
                 <Calendar
                   mode="single"
                   selected={date}
                   onSelect={setDate}
                   onMonthChange={setDate}
+                  timeZone={timeZone}
                   className="bg-transparent p-0 w-full [&_table]:w-full [&_td]:h-12 [&_td]:w-12 [&_th]:h-10 [&_th]:text-base [&_button]:h-12 [&_button]:w-12 [&_button]:text-base"
                   required
                 />

@@ -25,6 +25,8 @@ class VoiceAgentWebSocket:
         self.last_conversation_id: Optional[str] = None
         self.agent_profile_id: Optional[str] = None
         self.profile_context: Optional[Dict[str, Any]] = None
+        self.tts_start_time: Optional[datetime] = None
+        self.processing_start_time: Optional[datetime] = None
 
     async def handle_connection(self):
         """Main WebSocket connection handler"""
@@ -230,6 +232,9 @@ class VoiceAgentWebSocket:
 
     async def process_user_input(self, text: str):
         """Process user input through LLM and TTS"""
+        start_time = datetime.now()
+        self.processing_start_time = start_time
+        
         try:
             clean_text = text.replace("<end>", "").replace("<END>", "").strip()
             if not clean_text:
@@ -243,6 +248,7 @@ class VoiceAgentWebSocket:
 
             system_prompt = self.compose_system_prompt()
             full_response = ""
+            llm_start = datetime.now()
             
             async for event in self.llm_service.generate_response(
                 clean_text, system_prompt
@@ -257,20 +263,41 @@ class VoiceAgentWebSocket:
                     await self.websocket.send_json(
                         {"type": "error", "message": event["content"]}
                     )
-                    return  # Stop processing on error
+                    return
 
+            llm_time = (datetime.now() - llm_start).total_seconds()
+            
             self.conversation.add_message("assistant", full_response)
-            await self.websocket.send_json({
-                "type": "assistant_message",
-                "text": full_response
-            })
-
+            
+            # Check if event was created/modified and notify frontend
+            if any(word in clean_text.lower() for word in 
+                   ["add", "create", "schedule", "book", "update", 
+                    "change", "modify", "delete", "cancel", "remove"]):
+                await self.websocket.send_json({
+                    "type": "calendar_refresh"
+                })
+            
+            # Start TTS timing when we initiate synthesis
             if full_response.strip():
-                print(f"[TTS] Sending complete response to Vogent: {len(full_response)} chars")
+                self.tts_start_time = datetime.now()
                 await self.tts_service.synthesize_speech(
                     full_response.strip(),
                     final=True
                 )
+            
+            # Calculate total time up to this point (before TTS completes)
+            # TTS time will be updated when complete message is received
+            total_time = (datetime.now() - start_time).total_seconds()
+            
+            await self.websocket.send_json({
+                "type": "assistant_message",
+                "text": full_response,
+                "timing": {
+                    "llm_time": round(llm_time, 2),
+                    "tts_time": 0.0,  # Will be updated when TTS completes
+                    "total_time": round(total_time, 2)
+                }
+            })
 
         except Exception as e:
             print(f"Processing error: {e}")
@@ -355,6 +382,24 @@ class VoiceAgentWebSocket:
                         print(f"[WS] ✅ Forwarded {len(audio_data)} bytes to client")
                     elif result["type"] == "complete":
                         print(f"[WS] TTS generation complete, sending tts_complete")
+                        
+                        # Calculate actual TTS time and total time
+                        if self.tts_start_time and self.processing_start_time:
+                            tts_time = (datetime.now() - self.tts_start_time).total_seconds()
+                            # Calculate total time from start_time (when processing began)
+                            total_time = (datetime.now() - self.processing_start_time).total_seconds()
+                            self.tts_start_time = None  # Reset
+                            self.processing_start_time = None  # Reset
+                            
+                            # Send timing update with actual TTS time and updated total time
+                            await self.websocket.send_json({
+                                "type": "timing_update",
+                                "timing": {
+                                    "tts_time": round(tts_time, 2),
+                                    "total_time": round(total_time, 2)
+                                }
+                            })
+                        
                         await self.websocket.send_json({
                             "type": "tts_complete"
                         })

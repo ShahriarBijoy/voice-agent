@@ -128,3 +128,13 @@ temp/
 *.m4a
 *.aac
 *.ogg
+
+# Documentation/Fix files
+voice-agent-app/TROUBLESHOOTING.md
+voice-agent-app/CRITICAL_FIXES.txt
+voice-agent-app/DELETE_EVENT_FIX.txt
+voice-agent-app/DUPLICATE_AND_DATE_FIXES.txt
+voice-agent-app/PERFORMANCE_IMPROVEMENTS.txt
+
+# Backend conversation data
+voice-agent-app/backend/conversations/
