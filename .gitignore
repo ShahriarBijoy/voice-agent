@@ -138,3 +138,11 @@ voice-agent-app/PERFORMANCE_IMPROVEMENTS.txt
 
 # Backend conversation data
 voice-agent-app/backend/conversations/
+
+# Backend documentation files
+voice-agent-app/backend/README_CONTEXT_FIX.md
+voice-agent-app/backend/CONTEXT_IMPROVEMENTS.md
+voice-agent-app/backend/IMPLEMENTATION_SUMMARY.md
+voice-agent-app/backend/QUICK_REFERENCE.md
+voice-agent-app/backend/TESTING_GUIDE.md
+voice-agent-app/backend/start_backend.bat
