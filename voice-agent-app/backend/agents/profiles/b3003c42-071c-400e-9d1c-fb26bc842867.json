@@ -1,0 +1,120 @@
+{
+  "id": "b3003c42-071c-400e-9d1c-fb26bc842867",
+  "name": "Test Agent",
+  "description": "Describe your new agent here",
+  "welcomeMessage": "Hello! How can I help you today?",
+  "tone": "Professional and friendly",
+  "speakingStyle": "Clear and concise",
+  "behavior": "Be helpful and courteous",
+  "tags": [],
+  "tools": [],
+  "graph": {
+    "nodes": [
+      {
+        "id": "start",
+        "type": "start",
+        "position": {
+          "x": 0,
+          "y": 0
+        },
+        "data": {
+          "title": "Start",
+          "description": "Answer call with welcome message"
+        }
+      },
+      {
+        "id": "tone-1761961567550",
+        "type": "tone",
+        "position": {
+          "x": 0,
+          "y": 200
+        },
+        "data": {
+          "title": "Tone",
+          "description": "New tone node",
+          "tone": "Professional and helpful"
+        }
+      },
+      {
+        "id": "behavior-1761961585889",
+        "type": "behavior",
+        "position": {
+          "x": 0,
+          "y": 400
+        },
+        "data": {
+          "title": "Behavior",
+          "description": "New behavior node",
+          "behavior": "Check calendar events"
+        }
+      },
+      {
+        "id": "prompt-1761961603460",
+        "type": "prompt",
+        "position": {
+          "x": 0,
+          "y": 600
+        },
+        "data": {
+          "title": "Prompt",
+          "description": "When user asks about schedule, list their events"
+        }
+      },
+      {
+        "id": "tool-1761961617410",
+        "type": "tool",
+        "position": {
+          "x": 0,
+          "y": 800
+        },
+        "data": {
+          "title": "Calendar",
+          "description": "Calendar - read events",
+          "status": "active",
+          "toolType": "calendar"
+        }
+      },
+      {
+        "id": "summary-1761961640477",
+        "type": "summary",
+        "position": {
+          "x": 0,
+          "y": 1000
+        },
+        "data": {
+          "title": "Summary",
+          "description": "New summary node"
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "xy-edge__start-tone-1761961567550",
+        "source": "start",
+        "target": "tone-1761961567550"
+      },
+      {
+        "id": "xy-edge__tone-1761961567550-behavior-1761961585889",
+        "source": "tone-1761961567550",
+        "target": "behavior-1761961585889"
+      },
+      {
+        "id": "xy-edge__behavior-1761961585889-prompt-1761961603460",
+        "source": "behavior-1761961585889",
+        "target": "prompt-1761961603460"
+      },
+      {
+        "id": "xy-edge__prompt-1761961603460-tool-1761961617410",
+        "source": "prompt-1761961603460",
+        "target": "tool-1761961617410"
+      },
+      {
+        "id": "xy-edge__tool-1761961617410-summary-1761961640477",
+        "source": "tool-1761961617410",
+        "target": "summary-1761961640477"
+      }
+    ]
+  },
+  "createdAt": "2025-11-01T01:45:05.760000+00:00",
+  "updatedAt": "2025-11-01T01:47:47.624302"
+}

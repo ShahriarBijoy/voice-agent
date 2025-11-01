@@ -8,13 +8,16 @@ import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { AgentNode, AgentProfileDraft } from "@/lib/schemas/agent";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Trash2 } from "lucide-react";
 import { 
   ToneNodeForm, 
   BehaviorNodeForm, 
   PromptNodeForm, 
   ToolNodeForm, 
   SummaryNodeForm,
-  StartNodeForm
+  StartNodeForm,
+  ConditionNodeForm,
+  ActionNodeForm,
 } from "@/components/agent-builder/node-forms";
 
 interface AgentSidePanelProps {
@@ -22,6 +25,7 @@ interface AgentSidePanelProps {
   selectedNode?: AgentNode;
   onEditProfile?(): void;
   onUpdateNode?(nodeId: string, data: any): void;
+  onDeleteNode?(nodeId: string): void;
 }
 
 const GeneralInfoPanel = ({ profile, onEditProfile }: { profile: AgentProfileDraft, onEditProfile?: () => void }) => {
@@ -120,7 +124,7 @@ const GeneralInfoPanel = ({ profile, onEditProfile }: { profile: AgentProfileDra
   )
 }
 
-const NodeConfigPanel = ({ node, onUpdate }: { node: AgentNode, onUpdate?: (id: string, data: any) => void }) => {
+const NodeConfigPanel = ({ node, onUpdate, onDelete }: { node: AgentNode, onUpdate?: (id: string, data: any) => void, onDelete?: (id: string) => void }) => {
   
   const renderForm = () => {
     if (!onUpdate) return null;
@@ -138,6 +142,10 @@ const NodeConfigPanel = ({ node, onUpdate }: { node: AgentNode, onUpdate?: (id: 
         return <ToolNodeForm node={node} onUpdate={onUpdate} />;
       case "summary":
         return <SummaryNodeForm node={node} onUpdate={onUpdate} />;
+      case "condition":
+        return <ConditionNodeForm node={node} onUpdate={onUpdate} />;
+      case "action":
+        return <ActionNodeForm node={node} onUpdate={onUpdate} />;
       default:
         return (
           <p className="text-sm text-muted-foreground">
@@ -149,13 +157,25 @@ const NodeConfigPanel = ({ node, onUpdate }: { node: AgentNode, onUpdate?: (id: 
 
   return (
     <div className="flex flex-col gap-4">
-       <section>
-        <h3 className="text-xl font-semibold capitalize text-foreground">
-          {node.type} Node
-        </h3>
-        <p className="text-sm text-muted-foreground">
-          Configure this node&apos;s properties
-        </p>
+      <section className="flex items-start justify-between">
+        <div>
+          <h3 className="text-xl font-semibold capitalize text-foreground">
+            {node.type} Node
+          </h3>
+          <p className="text-sm text-muted-foreground">
+            Configure this node&apos;s properties
+          </p>
+        </div>
+        {onDelete && (
+          <Button
+            size="sm"
+            variant="ghost"
+            className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+            onClick={() => onDelete(node.id)}
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        )}
       </section>
       <div className="pt-2">
         {renderForm()}
@@ -164,7 +184,7 @@ const NodeConfigPanel = ({ node, onUpdate }: { node: AgentNode, onUpdate?: (id: 
   )
 }
 
-export function AgentSidePanel({ profile, selectedNode, onEditProfile, onUpdateNode }: AgentSidePanelProps) {
+export function AgentSidePanel({ profile, selectedNode, onEditProfile, onUpdateNode, onDeleteNode }: AgentSidePanelProps) {
   
   return (
     <ScrollArea className="h-full">
@@ -175,7 +195,7 @@ export function AgentSidePanel({ profile, selectedNode, onEditProfile, onUpdateN
         className="flex h-full w-full flex-col gap-4 rounded-2xl border border-border/70 bg-background/70 p-6 shadow-sm"
       >
         {selectedNode ? (
-          <NodeConfigPanel node={selectedNode} onUpdate={onUpdateNode} />
+          <NodeConfigPanel node={selectedNode} onUpdate={onUpdateNode} onDelete={onDeleteNode} />
         ) : (
           <GeneralInfoPanel profile={profile} onEditProfile={onEditProfile} />
         )}

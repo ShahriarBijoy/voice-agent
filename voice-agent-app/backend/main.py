@@ -24,7 +24,7 @@ async def websocket_endpoint(websocket: WebSocket):
     await handler.handle_connection()
 
 app.include_router(conversations.router, tags=["conversations"])
-app.include_router(agents.router, prefix="/api/agents", tags=["agents"])
+app.include_router(agents.router, prefix="/api", tags=["agents"])
 app.include_router(calendar.router, tags=["calendar"])
 
 if __name__ == "__main__":

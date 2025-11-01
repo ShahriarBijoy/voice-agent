@@ -10,6 +10,7 @@ from services.tts_service import VogentTTSService
 from models.conversation import ConversationManager
 from models.agent_profile import get_agent_profile
 from utils.prompt_templates import compose_prompt
+from utils.greetings import get_random_greeting
 
 
 class VoiceAgentWebSocket:
@@ -27,6 +28,7 @@ class VoiceAgentWebSocket:
         self.profile_context: Optional[Dict[str, Any]] = None
         self.tts_start_time: Optional[datetime] = None
         self.processing_start_time: Optional[datetime] = None
+        self.greeting_sent: bool = False
 
     async def handle_connection(self):
         """Main WebSocket connection handler"""
@@ -69,6 +71,9 @@ class VoiceAgentWebSocket:
             receive_task = asyncio.create_task(self.receive_loop(), name="receive_loop")
             stt_task = asyncio.create_task(self.stt_loop(), name="stt_loop")
             tts_task = asyncio.create_task(self.tts_loop(), name="tts_loop")
+
+            # Deliver initial greeting via TTS
+            await self.send_initial_greeting()
 
             # Wait until shutdown is signaled
             await self.shutdown_event.wait()
@@ -247,17 +252,34 @@ class VoiceAgentWebSocket:
             })
 
             system_prompt = self.compose_system_prompt()
+            
+            # Extract profile settings for workflow context
+            tone = self.profile_context.get('tone', 'Warm and professional') if self.profile_context else 'Warm and professional'
+            behavior = self.profile_context.get('behavior', 'General helpful assistant') if self.profile_context else 'General helpful assistant'
+            speaking_style = self.profile_context.get('speakingStyle', 'Balanced') if self.profile_context else 'Balanced'
+            welcome_message = self.profile_context.get('welcomeMessage', 'Hello!') if self.profile_context else 'Hello!'
+            
             full_response = ""
             llm_start = datetime.now()
             
             async for event in self.llm_service.generate_response(
-                clean_text, system_prompt
+                clean_text, 
+                system_prompt,
+                tone=tone,
+                behavior=behavior,
+                speaking_style=speaking_style,
+                welcome_message=welcome_message
             ):
                 if event["type"] == "text":
                     chunk = event["content"]
                     full_response += chunk
                     await self.websocket.send_json(
                         {"type": "assistant_chunk", "text": chunk}
+                    )
+                elif event["type"] == "workflow":
+                    # Workflow execution notification
+                    await self.websocket.send_json(
+                        {"type": "workflow_executed", "message": event["content"]}
                     )
                 elif event["type"] == "error":
                     await self.websocket.send_json(
@@ -323,6 +345,13 @@ class VoiceAgentWebSocket:
 
         self.agent_profile_id = profile_id
         self.profile_context = profile.to_dict()
+        
+        # Load agent graph into LLM service for workflow orchestration
+        agent_graph = self.profile_context.get('graph', {})
+        if agent_graph and agent_graph.get('nodes'):
+            self.llm_service.set_agent_graph(agent_graph, enable_workflow=True)
+            print(f"🔄 Loaded agent graph with {len(agent_graph.get('nodes', []))} nodes")
+        
         await self.websocket.send_json({
             "type": "profile_loaded",
             "profile": self.profile_context,
@@ -355,6 +384,35 @@ class VoiceAgentWebSocket:
             speaking_style=self.profile_context.get("speakingStyle", ""),
             tool_context=tool_names,
         )
+
+    async def send_initial_greeting(self):
+        if self.greeting_sent or self.shutdown_event.is_set():
+            return
+
+        greeting = get_random_greeting()
+        try:
+            self.conversation.add_message("assistant", greeting)
+            now = datetime.now()
+            self.processing_start_time = now
+            self.tts_start_time = now
+
+            await self.tts_service.synthesize_speech(greeting, final=True)
+
+            await self.websocket.send_json({
+                "type": "assistant_message",
+                "text": greeting,
+                "timing": {
+                    "llm_time": 0.0,
+                    "tts_time": 0.0,
+                    "total_time": 0.0,
+                }
+            })
+
+            self.greeting_sent = True
+        except Exception as exc:
+            print(f"Failed to send initial greeting: {exc}")
+            import traceback
+            traceback.print_exc()
 
     async def evaluate_tools(self, user_input: str) -> Optional[Dict[str, Any]]:
         # This method is now obsolete as tool evaluation is handled by the LLM service

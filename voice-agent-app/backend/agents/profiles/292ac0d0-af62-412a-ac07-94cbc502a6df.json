@@ -1,0 +1,124 @@
+{
+  "id": "292ac0d0-af62-412a-ac07-94cbc502a6df",
+  "name": "Calendar Assistant",
+  "description": "A simple assistant that helps you check your calendar events.",
+  "welcomeMessage": "Hello! I can help you check your calendar. What would you like to know?",
+  "tone": "Warm, Energetic",
+  "speakingStyle": "Clear",
+  "behavior": "Check calendar events",
+  "tags": [
+    "calendar",
+    "assistant"
+  ],
+  "tools": [],
+  "graph": {
+    "nodes": [
+      {
+        "id": "start",
+        "type": "start",
+        "position": {
+          "x": 0,
+          "y": 0
+        },
+        "data": {
+          "title": "Start",
+          "description": "Greet the user"
+        }
+      },
+      {
+        "id": "tone-1761962338605",
+        "type": "tone",
+        "position": {
+          "x": 0,
+          "y": 200
+        },
+        "data": {
+          "title": "Tone",
+          "description": "New tone node",
+          "tone": "Warm, Energetic",
+          "speakingStyle": "Clear"
+        }
+      },
+      {
+        "id": "behavior-1761962341125",
+        "type": "behavior",
+        "position": {
+          "x": 0,
+          "y": 400
+        },
+        "data": {
+          "title": "Behavior",
+          "description": "New behavior node",
+          "behavior": "Check calendar events"
+        }
+      },
+      {
+        "id": "prompt-1761962500104",
+        "type": "prompt",
+        "position": {
+          "x": 0,
+          "y": 600
+        },
+        "data": {
+          "title": "Prompt",
+          "description": "When user asks about schedule, list their events"
+        }
+      },
+      {
+        "id": "tool-1761962552202",
+        "type": "tool",
+        "position": {
+          "x": 0,
+          "y": 800
+        },
+        "data": {
+          "title": "Calendar ",
+          "description": "Calendar - read events",
+          "status": "active",
+          "toolType": "calendar"
+        }
+      },
+      {
+        "id": "summary-1761962574790",
+        "type": "summary",
+        "position": {
+          "x": 0,
+          "y": 1000
+        },
+        "data": {
+          "title": "Summary",
+          "description": "Confirm what you found"
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "xy-edge__start-tone-1761962338605",
+        "source": "start",
+        "target": "tone-1761962338605"
+      },
+      {
+        "id": "xy-edge__tone-1761962338605-behavior-1761962341125",
+        "source": "tone-1761962338605",
+        "target": "behavior-1761962341125"
+      },
+      {
+        "id": "xy-edge__behavior-1761962341125-prompt-1761962500104",
+        "source": "behavior-1761962341125",
+        "target": "prompt-1761962500104"
+      },
+      {
+        "id": "xy-edge__prompt-1761962500104-tool-1761962552202",
+        "source": "prompt-1761962500104",
+        "target": "tool-1761962552202"
+      },
+      {
+        "id": "xy-edge__tool-1761962552202-summary-1761962574790",
+        "source": "tool-1761962552202",
+        "target": "summary-1761962574790"
+      }
+    ]
+  },
+  "createdAt": "2025-11-01T02:03:45.554964",
+  "updatedAt": "2025-11-01T02:03:49.811283"
+}

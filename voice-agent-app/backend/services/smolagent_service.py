@@ -2,6 +2,8 @@
 Smolagents-based LLM service with improved memory management.
 This service uses smolagents' ToolCallingAgent with persistent memory
 to maintain full conversation context across all interactions.
+
+Enhanced with workflow engine for graph-based orchestration.
 """
 import asyncio
 from datetime import datetime
@@ -16,6 +18,11 @@ from agents.smolagents_tools import (
     SmolDeleteDuplicatesTool,
     SmolDeleteEventTool
 )
+from services.workflow_engine import (
+    WorkflowEngine,
+    WorkflowContext,
+    workflow_engine,
+)
 
 
 class SmolAgentService:
@@ -23,6 +30,8 @@ class SmolAgentService:
     LLM service using smolagents ToolCallingAgent with persistent memory.
     The agent maintains a single instance throughout the conversation to
     preserve full context and prevent memory loss.
+    
+    Enhanced with workflow engine for graph-based orchestration.
     """
     def __init__(self):
         # Initialize LiteLLM model for OpenAI
@@ -53,6 +62,11 @@ class SmolAgentService:
         
         # Track last event details for context
         self.last_event_context: Optional[Dict[str, Any]] = None
+        
+        # Workflow engine for graph-based execution
+        self.workflow_engine: WorkflowEngine = workflow_engine
+        self.agent_graph: Optional[Dict[str, Any]] = None
+        self.workflow_enabled: bool = False
 
     def _create_agent_if_needed(self):
         """Create agent only if it doesn't exist."""
@@ -178,10 +192,17 @@ class SmolAgentService:
     async def generate_response(
         self,
         user_message: str,
-        system_prompt: str
+        system_prompt: str,
+        tone: str = "",
+        behavior: str = "",
+        speaking_style: str = "",
+        welcome_message: str = ""
     ) -> AsyncGenerator[Dict[str, Any], None]:
         """
         Generate a response while maintaining full conversation context.
+        
+        If workflow is enabled, executes the graph first to modify context,
+        then generates response with LLM.
         """
         # Create agent if it doesn't exist (only once per session)
         self._create_agent_if_needed()
@@ -196,8 +217,37 @@ class SmolAgentService:
         # Inject context into tools
         self._inject_context_to_tools()
         
+        # Execute workflow if enabled
+        enhanced_prompt = system_prompt
+        if self.workflow_enabled and self.agent_graph:
+            try:
+                workflow_result = await self._execute_workflow(
+                    user_message,
+                    system_prompt,
+                    tone or "professional",
+                    behavior or "helpful",
+                    speaking_style or "clear",
+                    welcome_message or "Hello"
+                )
+                
+                # Use enhanced prompt from workflow
+                enhanced_prompt = workflow_result['enhanced_prompt']
+                
+                # Notify about workflow execution
+                yield {
+                    "type": "workflow",
+                    "content": f"Workflow executed: {len(workflow_result['context'].executed_nodes)} nodes"
+                }
+                
+                print(f"✅ Workflow execution completed")
+                
+            except Exception as e:
+                print(f"⚠️ Workflow execution failed: {e}, falling back to standard mode")
+                import traceback
+                traceback.print_exc()
+        
         # Build rich context with full history
-        query = self._build_rich_context(user_message, system_prompt)
+        query = self._build_rich_context(user_message, enhanced_prompt)
         
         # Record user message with timestamp
         self.conversation_history.append({
@@ -229,7 +279,7 @@ class SmolAgentService:
             if full_response:
                 chunk_size = 10
                 for i in range(0, len(full_response), chunk_size):
-                    chunk = full_response[i : i + chunk_size]
+                    chunk = full_response[i: i + chunk_size]
                     yield {"type": "text", "content": chunk}
                     await asyncio.sleep(0.01)
 
@@ -255,4 +305,89 @@ class SmolAgentService:
         self.agent = None
         self.conversation_history = []
         self.last_event_context = None
+        self.agent_graph = None
+        self.workflow_enabled = False
         print("🧹 Cleared agent memory and conversation history")
+    
+    def set_agent_graph(self, graph: Dict[str, Any], enable_workflow: bool = True):
+        """
+        Set the agent graph for workflow-based execution.
+        
+        Args:
+            graph: The graph structure from agent profile
+            enable_workflow: Whether to enable workflow-based execution
+        """
+        self.agent_graph = graph
+        self.workflow_enabled = enable_workflow
+        
+        # Validate graph
+        if graph:
+            is_valid, error = self.workflow_engine.validate_graph(graph)
+            if not is_valid:
+                print(f"⚠️ Invalid graph: {error}")
+                self.workflow_enabled = False
+            else:
+                print(f"✅ Agent graph loaded with {len(graph.get('nodes', []))} nodes")
+                print(f"🔄 Workflow orchestration: {'ENABLED' if enable_workflow else 'DISABLED'}")
+    
+    async def _execute_workflow(
+        self,
+        user_message: str,
+        system_prompt: str,
+        tone: str,
+        behavior: str,
+        speaking_style: str,
+        welcome_message: str
+    ) -> Dict[str, Any]:
+        """
+        Execute the agent graph as a workflow.
+        
+        Returns:
+            Dictionary with workflow execution result
+        """
+        cet_tz = ZoneInfo("Europe/Berlin")
+        
+        # Create workflow context
+        context = WorkflowContext(
+            user_message=user_message,
+            conversation_history=self.conversation_history.copy(),
+            system_prompt=system_prompt,
+            tone=tone,
+            behavior=behavior,
+            speaking_style=speaking_style,
+            welcome_message=welcome_message,
+            variables={},
+            executed_nodes=set(),
+            node_outputs={},
+            tool_registry=self.tools,
+            llm_service=self,
+            current_time=datetime.now(cet_tz),
+            timezone=cet_tz
+        )
+        
+        # Execute workflow
+        print(f"🔄 Starting workflow execution...")
+        result = await self.workflow_engine.execute_workflow(
+            self.agent_graph,
+            context
+        )
+        
+        # Extract modified context values
+        tone = context.tone
+        behavior = context.behavior
+        custom_prompt = context.variables.get('custom_prompt')
+        
+        # Build enhanced system prompt with workflow context
+        workflow_context = f"\n\nWorkflow Context:\n"
+        if custom_prompt:
+            workflow_context += f"Custom Instructions: {custom_prompt}\n"
+        workflow_context += f"Active Tone: {tone}\n"
+        workflow_context += f"Active Behavior: {behavior}\n"
+        
+        return {
+            'workflow_result': result,
+            'context': context,
+            'enhanced_prompt': system_prompt + workflow_context,
+            'tone': tone,
+            'behavior': behavior,
+        }

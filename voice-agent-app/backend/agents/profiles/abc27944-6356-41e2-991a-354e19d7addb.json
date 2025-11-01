@@ -1,0 +1,120 @@
+{
+  "id": "abc27944-6356-41e2-991a-354e19d7addb",
+  "name": "New Agent",
+  "description": "Describe your new agent here",
+  "welcomeMessage": "Hello! How can I help you today?",
+  "tone": "Professional and friendly",
+  "speakingStyle": "Clear and concise",
+  "behavior": "Be helpful and courteous",
+  "tags": [],
+  "tools": [],
+  "graph": {
+    "nodes": [
+      {
+        "id": "start",
+        "type": "start",
+        "position": {
+          "x": 0,
+          "y": 0
+        },
+        "data": {
+          "title": "Start",
+          "description": "Answer call with welcome message"
+        }
+      },
+      {
+        "id": "tone-1761960676084",
+        "type": "tone",
+        "position": {
+          "x": 0,
+          "y": 200
+        },
+        "data": {
+          "title": "Tone",
+          "description": "New tone node",
+          "tone": "Supportive and calm"
+        }
+      },
+      {
+        "id": "behavior-1761960688312",
+        "type": "behavior",
+        "position": {
+          "x": 0,
+          "y": 400
+        },
+        "data": {
+          "title": "Behavior",
+          "description": "New behavior node",
+          "behavior": "Gather reason for call"
+        }
+      },
+      {
+        "id": "prompt-1761960709466",
+        "type": "prompt",
+        "position": {
+          "x": 0,
+          "y": 600
+        },
+        "data": {
+          "title": "Prompt",
+          "description": "Ask for customer ID before continuing"
+        }
+      },
+      {
+        "id": "tool-1761960733252",
+        "type": "tool",
+        "position": {
+          "x": 0,
+          "y": 800
+        },
+        "data": {
+          "title": "Appointment Scheduler",
+          "description": "Test",
+          "status": "active",
+          "toolType": "calendar"
+        }
+      },
+      {
+        "id": "summary-1761960757145",
+        "type": "summary",
+        "position": {
+          "x": 0,
+          "y": 1000
+        },
+        "data": {
+          "title": "Summary",
+          "description": "New summary node"
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "xy-edge__start-tone-1761960676084",
+        "source": "start",
+        "target": "tone-1761960676084"
+      },
+      {
+        "id": "xy-edge__tone-1761960676084-behavior-1761960688312",
+        "source": "tone-1761960676084",
+        "target": "behavior-1761960688312"
+      },
+      {
+        "id": "xy-edge__behavior-1761960688312-prompt-1761960709466",
+        "source": "behavior-1761960688312",
+        "target": "prompt-1761960709466"
+      },
+      {
+        "id": "xy-edge__prompt-1761960709466-tool-1761960733252",
+        "source": "prompt-1761960709466",
+        "target": "tool-1761960733252"
+      },
+      {
+        "id": "xy-edge__tool-1761960733252-summary-1761960757145",
+        "source": "tool-1761960733252",
+        "target": "summary-1761960757145"
+      }
+    ]
+  },
+  "createdAt": "2025-11-01T01:31:05.195000+00:00",
+  "updatedAt": "2025-11-01T01:32:46.497546"
+}

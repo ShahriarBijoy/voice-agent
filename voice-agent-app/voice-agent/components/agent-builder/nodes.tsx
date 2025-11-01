@@ -10,17 +10,19 @@ import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
-interface BaseAgentNodeData {
-  title: string;
+interface BaseAgentNodeData extends Record<string, unknown> {
+  title?: string;
   subtitle?: string;
   description?: string;
   tone?: string;
   behavior?: string;
   icon?: React.ReactNode;
   status?: "active" | "inactive";
+  conditionType?: string;
+  actionType?: string;
 }
 
-interface AgentNodeProps extends NodeProps<BaseAgentNodeData> {}
+type AgentNodeProps = NodeProps & { data: BaseAgentNodeData };
 
 export const AgentStartNode = memo(function AgentStartNode(
   props: AgentNodeProps,
@@ -171,5 +173,59 @@ const handleClass = cn(
   "h-2 w-2 border-none bg-primary shadow-md shadow-primary/40",
   "group-hover/node:h-3 group-hover/node:w-3",
 );
+
+export const AgentConditionNode = memo(function AgentConditionNode(
+  props: AgentNodeProps,
+) {
+  const { data } = props;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0.5, scale: 0.96 }}
+      animate={{ opacity: 1, scale: 1 }}
+      className={cn(baseNodeClass, "border-yellow-500/40 bg-yellow-500/5")}
+    >
+      <Handle type="target" position={Position.Top} className={handleClass} />
+      <Handle type="source" position={Position.Bottom} className={handleClass} />
+      <Handle type="source" position={Position.Right} className={cn(handleClass, "bg-green-500")} id="true" />
+      <Handle type="source" position={Position.Left} className={cn(handleClass, "bg-red-500")} id="false" />
+      <div className="flex items-center gap-2">
+        <Badge className="bg-yellow-500/20 text-yellow-700">Condition</Badge>
+      </div>
+      <p className="text-sm font-semibold text-foreground">
+        {data.conditionType || "Check Condition"}
+      </p>
+      {data.description ? (
+        <p className="text-xs text-muted-foreground">{data.description}</p>
+      ) : null}
+    </motion.div>
+  );
+});
+
+export const AgentActionNode = memo(function AgentActionNode(
+  props: AgentNodeProps,
+) {
+  const { data } = props;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0.5, scale: 0.96 }}
+      animate={{ opacity: 1, scale: 1 }}
+      className={cn(baseNodeClass, "border-blue-500/40 bg-blue-500/5")}
+    >
+      <Handle type="target" position={Position.Top} className={handleClass} />
+      <Handle type="source" position={Position.Bottom} className={handleClass} />
+      <div className="flex items-center gap-2">
+        <Badge className="bg-blue-500/20 text-blue-700">Action</Badge>
+      </div>
+      <p className="text-sm font-semibold text-foreground">
+        {data.actionType || "Perform Action"}
+      </p>
+      {data.description ? (
+        <p className="text-xs text-muted-foreground">{data.description}</p>
+      ) : null}
+    </motion.div>
+  );
+});
 
 

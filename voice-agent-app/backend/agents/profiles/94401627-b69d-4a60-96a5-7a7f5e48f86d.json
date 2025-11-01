@@ -1,0 +1,139 @@
+{
+  "id": "94401627-b69d-4a60-96a5-7a7f5e48f86d",
+  "name": "Calendar Assistant",
+  "description": "A simple assistant that helps you check your calendar events.",
+  "welcomeMessage": "Hello! I can help you check your calendar. What would you like to know?",
+  "tone": "Professional and helpful",
+  "speakingStyle": "Clear and Concise",
+  "behavior": "Check calendar events",
+  "tags": [
+    "calendar",
+    "assistant"
+  ],
+  "tools": [
+    {
+      "id": "tool-1761964886082",
+      "label": "Calendar - read events",
+      "type": "appointment-scheduler",
+      "enabled": true,
+      "config": {
+        "calendarId": "primary",
+        "timezone": "UTC",
+        "bookingWindowDays": 30,
+        "slotDurationMinutes": 30,
+        "minimumNoticeMinutes": 60,
+        "confirmationTemplate": "Your appointment is confirmed."
+      }
+    }
+  ],
+  "graph": {
+    "nodes": [
+      {
+        "id": "start",
+        "type": "start",
+        "position": {
+          "x": 0,
+          "y": 0
+        },
+        "data": {
+          "title": "Start",
+          "description": "Greet the user"
+        }
+      },
+      {
+        "id": "tone-1761964808724",
+        "type": "tone",
+        "position": {
+          "x": 0,
+          "y": 200
+        },
+        "data": {
+          "title": "Tone",
+          "description": "New tone node",
+          "tone": "Professional and helpful",
+          "speakingStyle": "Clear and Concise"
+        }
+      },
+      {
+        "id": "behavior-1761964849167",
+        "type": "behavior",
+        "position": {
+          "x": 0,
+          "y": 400
+        },
+        "data": {
+          "title": "Behavior",
+          "description": "New behavior node",
+          "behavior": "Check calendar events"
+        }
+      },
+      {
+        "id": "prompt-1761964866970",
+        "type": "prompt",
+        "position": {
+          "x": 0,
+          "y": 600
+        },
+        "data": {
+          "title": "Prompt",
+          "description": "When user asks about schedule, list their events"
+        }
+      },
+      {
+        "id": "tool-1761964886082",
+        "type": "tool",
+        "position": {
+          "x": 0,
+          "y": 800
+        },
+        "data": {
+          "title": "Calendar - read events",
+          "description": "Calendar - read events",
+          "status": "active",
+          "toolType": "calendar"
+        }
+      },
+      {
+        "id": "summary-1761964907799",
+        "type": "summary",
+        "position": {
+          "x": 0,
+          "y": 1000
+        },
+        "data": {
+          "title": "Summary",
+          "description": "Confirm what you found"
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "xy-edge__start-tone-1761964808724",
+        "source": "start",
+        "target": "tone-1761964808724"
+      },
+      {
+        "id": "xy-edge__tone-1761964808724-behavior-1761964849167",
+        "source": "tone-1761964808724",
+        "target": "behavior-1761964849167"
+      },
+      {
+        "id": "xy-edge__behavior-1761964849167-prompt-1761964866970",
+        "source": "behavior-1761964849167",
+        "target": "prompt-1761964866970"
+      },
+      {
+        "id": "xy-edge__prompt-1761964866970-tool-1761964886082",
+        "source": "prompt-1761964866970",
+        "target": "tool-1761964886082"
+      },
+      {
+        "id": "xy-edge__tool-1761964886082-summary-1761964907799",
+        "source": "tool-1761964886082",
+        "target": "summary-1761964907799"
+      }
+    ]
+  },
+  "createdAt": "2025-11-01T02:46:30.801082",
+  "updatedAt": "2025-11-01T02:46:30.801082"
+}

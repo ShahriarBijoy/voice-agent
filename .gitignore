@@ -129,7 +129,13 @@ temp/
 *.aac
 *.ogg
 
-# Documentation/Fix files
+# Markdown documentation files
+*.md
+
+# Text documentation files
+*.txt
+
+# Documentation/Fix files (specific)
 voice-agent-app/TROUBLESHOOTING.md
 voice-agent-app/CRITICAL_FIXES.txt
 voice-agent-app/DELETE_EVENT_FIX.txt
@@ -139,10 +145,5 @@ voice-agent-app/PERFORMANCE_IMPROVEMENTS.txt
 # Backend conversation data
 voice-agent-app/backend/conversations/
 
-# Backend documentation files
-voice-agent-app/backend/README_CONTEXT_FIX.md
-voice-agent-app/backend/CONTEXT_IMPROVEMENTS.md
-voice-agent-app/backend/IMPLEMENTATION_SUMMARY.md
-voice-agent-app/backend/QUICK_REFERENCE.md
-voice-agent-app/backend/TESTING_GUIDE.md
+# Backend documentation files (now covered by *.md above)
 voice-agent-app/backend/start_backend.bat

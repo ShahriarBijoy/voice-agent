@@ -1,14 +1,35 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, List, Optional
 import json
 import uuid
 
 
-AGENT_DIRECTORY = Path("agents")
+def _parse_datetime(value: str) -> datetime:
+    """Parse datetime string and ensure it's timezone-aware."""
+    try:
+        dt = datetime.fromisoformat(value)
+    except ValueError:
+        if value.endswith("Z"):
+            dt = datetime.fromisoformat(value.replace("Z", "+00:00"))
+        else:
+            raise
+    
+    # Ensure timezone-aware
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=timezone.utc)
+    return dt
+
+
+def _now_utc() -> datetime:
+    """Get current UTC time as timezone-aware datetime."""
+    return datetime.now(timezone.utc)
+
+
+AGENT_DIRECTORY = Path("agents/profiles")
 AGENT_DIRECTORY.mkdir(parents=True, exist_ok=True)
 
 
@@ -54,8 +75,8 @@ class AgentProfile:
     tags: List[str]
     tools: List[AgentToolConfig]
     graph: AgentGraph
-    created_at: datetime = field(default_factory=datetime.utcnow)
-    updated_at: datetime = field(default_factory=datetime.utcnow)
+    created_at: datetime = field(default_factory=_now_utc)
+    updated_at: datetime = field(default_factory=_now_utc)
 
     def to_dict(self) -> Dict:
         return {
@@ -140,12 +161,12 @@ class AgentProfile:
                     for edge in data.get("graph", {}).get("edges", [])
                 ],
             ),
-            created_at=datetime.fromisoformat(data["createdAt"])
+            created_at=_parse_datetime(data["createdAt"])
             if "createdAt" in data
-            else datetime.utcnow(),
-            updated_at=datetime.fromisoformat(data["updatedAt"])
+            else _now_utc(),
+            updated_at=_parse_datetime(data["updatedAt"])
             if "updatedAt" in data
-            else datetime.utcnow(),
+            else _now_utc(),
         )
 
 
@@ -175,10 +196,12 @@ def get_agent_profile(profile_id: str) -> Optional[AgentProfile]:
     return AgentProfile.from_dict(data)
 
 
-def save_agent_profile(payload: Dict, profile_id: Optional[str] = None) -> AgentProfile:
+def save_agent_profile(
+    payload: Dict, profile_id: Optional[str] = None
+) -> AgentProfile:
     profile_data = payload.copy()
     profile_data.setdefault("id", profile_id or str(uuid.uuid4()))
-    profile_data["updatedAt"] = datetime.utcnow().isoformat()
+    profile_data["updatedAt"] = _now_utc().isoformat()
     profile_data.setdefault("createdAt", profile_data["updatedAt"])
 
     profile = AgentProfile.from_dict(profile_data)

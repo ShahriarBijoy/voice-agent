@@ -1,0 +1,33 @@
+{
+  "id": "761c9c8d-caad-44e7-823a-e3516c0072c2",
+  "name": "Calendar Assistant",
+  "description": "A simple assistant that helps you check your calendar events.",
+  "welcomeMessage": "Hello! I can help you check your calendar. What would you like to know?",
+  "tone": "Professional and friendly",
+  "speakingStyle": "Clear and concise",
+  "behavior": "Help users check their calendar events and availability.",
+  "tags": [
+    "calendar",
+    "assistant"
+  ],
+  "tools": [],
+  "graph": {
+    "nodes": [
+      {
+        "id": "start",
+        "type": "start",
+        "position": {
+          "x": 68.00692618151207,
+          "y": -174.07458677937257
+        },
+        "data": {
+          "title": "Start",
+          "description": "Greet the user"
+        }
+      }
+    ],
+    "edges": []
+  },
+  "createdAt": "2025-11-01T01:42:14.428000+00:00",
+  "updatedAt": "2025-11-01T01:42:54.391788"
+}
