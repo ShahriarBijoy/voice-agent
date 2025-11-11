@@ -143,10 +143,10 @@ export default function Calendar31() {
 
   return (
     <>
-      <div className="grid grid-cols-1 lg:grid-cols-[450px_1fr] gap-6 h-full">
+      <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-6 h-full">
         {/* Calendar Section */}
         <Card className="flex flex-col max-h-[60vh] overflow-hidden">
-          <CardContent className="p-6 pt-6">
+          <CardContent className="p-6 pt-2">
             <ScrollArea className="flex-1 min-h-0">
               {isClient && timeZone ? (
                 <Calendar
@@ -155,7 +155,8 @@ export default function Calendar31() {
                   onSelect={setDate}
                   onMonthChange={setDate}
                   timeZone={timeZone}
-                  className="bg-transparent p-0 w-full [&_table]:w-full [&_td]:h-12 [&_td]:w-12 [&_th]:h-10 [&_th]:text-base [&_button]:h-12 [&_button]:w-12 [&_button]:text-base"
+                  //  className="bg-transparent p-0 w-full [&_table]:w-full [&_td]:h-12 [&_td]:w-12 [&_th]:h-10 [&_th]:text-base [&_button]:h-12 [&_button]:w-12 [&_button]:text-base"
+                  className="[--cell-size:--spacing(8)] md:[--cell-size:--spacing(12)]"
                   required
                 />
               ) : (

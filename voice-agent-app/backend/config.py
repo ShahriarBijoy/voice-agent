@@ -11,6 +11,11 @@ class Settings:
     OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini")  # Valid default model
     VOGENT_API_KEY = os.getenv("VOGENT_API_KEY")
     VOGENT_VOICE_ID = os.getenv("VOGENT_VOICE_ID")
+    VOGENT_SAMPLE_RATE = int(os.getenv("VOGENT_SAMPLE_RATE", "24000"))
+    VOGENT_DEBUG_SAVE_AUDIO = (
+        os.getenv("VOGENT_DEBUG_SAVE_AUDIO", "false").lower() == "true"
+    )
+    VOGENT_DEBUG_AUDIO_DIR = os.getenv("VOGENT_DEBUG_AUDIO_DIR", "tts_debug")
     
     # Server Config
     HOST = os.getenv("HOST", "0.0.0.0")
