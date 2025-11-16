@@ -10,8 +10,9 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
-lib64/
+# Python build/lib artifacts at repo root
+/lib/
+/lib64/
 parts/
 sdist/
 var/
@@ -21,6 +22,10 @@ share/python-wheels/
 .installed.cfg
 *.egg
 MANIFEST
+
+# Frontend source directories that must be tracked
+!voice-agent-app/voice-agent/lib/
+!voice-agent-app/voice-agent/lib/**
 
 # Virtual environments
 venv/
