@@ -16,21 +16,48 @@ import {
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
+type ToolStatus = "active" | "inactive";
+type ToolType = "calendar" | "contacts" | "mail" | "teams";
+type ConditionType = "keyword" | "intent" | "variable";
+type ActionType = "set_variable" | "format_response" | "update_tone";
+
+const toStringValue = (value: unknown, fallback = ""): string =>
+  typeof value === "string" ? value : fallback;
+
+const toToolStatus = (value: unknown): ToolStatus =>
+  value === "active" || value === "inactive" ? value : "inactive";
+
+const toToolType = (value: unknown): ToolType => {
+  if (value === "contacts" || value === "mail" || value === "teams" || value === "calendar") {
+    return value;
+  }
+  return "calendar";
+};
+
+const toConditionType = (value: unknown): ConditionType =>
+  value === "intent" || value === "variable" ? value : "keyword";
+
+const toActionType = (value: unknown): ActionType =>
+  value === "format_response" || value === "update_tone" ? value : "set_variable";
+
 interface NodeFormProps {
   node: AgentNode;
-  onUpdate: (nodeId: string, data: any) => void;
+  onUpdate: (nodeId: string, data: Record<string, unknown>) => void;
 }
 
-const GenericNodeForm = ({ node, onUpdate, field, placeholder, label }: NodeFormProps & { field: string, placeholder?: string, label: string }) => {
-  const { register, watch, reset } = useForm({
+type GenericFormValues = Record<string, string>;
+
+const GenericNodeForm = ({ node, onUpdate, field, placeholder, label }: NodeFormProps & { field: string; placeholder?: string; label: string }) => {
+  const defaultValue = toStringValue(node.data?.[field]);
+  const { register, watch, reset } = useForm<GenericFormValues>({
     defaultValues: {
-      [field]: node.data?.[field] || ""
-    }
+      [field]: defaultValue,
+    },
   });
 
   useEffect(() => {
-    reset({ [field]: node.data?.[field] || "" });
-  }, [node.id, JSON.stringify(node.data), reset, field]);
+    reset({ [field]: toStringValue(node.data?.[field]) });
+  }, [field, node.data, node.id, reset]);
   
   useEffect(() => {
     const subscription = watch((value) => {
@@ -52,20 +79,25 @@ const GenericNodeForm = ({ node, onUpdate, field, placeholder, label }: NodeForm
   );
 };
 
+type ToneNodeFormValues = {
+  tone: string;
+  speakingStyle: string;
+};
+
 export const ToneNodeForm = ({ node, onUpdate }: NodeFormProps) => {
-  const { register, watch, reset } = useForm({
+  const { register, watch, reset } = useForm<ToneNodeFormValues>({
     defaultValues: {
-      tone: node.data?.tone || "",
-      speakingStyle: node.data?.speakingStyle || ""
-    }
+      tone: toStringValue(node.data?.tone),
+      speakingStyle: toStringValue(node.data?.speakingStyle),
+    },
   });
 
   useEffect(() => {
     reset({ 
-      tone: node.data?.tone || "",
-      speakingStyle: node.data?.speakingStyle || ""
+      tone: toStringValue(node.data?.tone),
+      speakingStyle: toStringValue(node.data?.speakingStyle),
     });
-  }, [node.id, JSON.stringify(node.data), reset]);
+  }, [node.data, node.id, reset]);
   
   useEffect(() => {
     const subscription = watch((value) => {
@@ -110,24 +142,31 @@ export const SummaryNodeForm = ({ node, onUpdate }: NodeFormProps) => (
   <GenericNodeForm node={node} onUpdate={onUpdate} field="description" label="Summary Details" placeholder="e.g., Summarize the call and send a follow-up email." />
 );
 
+type ToolNodeFormValues = {
+  title: string;
+  description: string;
+  status: ToolStatus;
+  toolType: ToolType;
+};
+
 export const ToolNodeForm = ({ node, onUpdate }: NodeFormProps) => {
-  const { register, watch, reset, control } = useForm({
+  const { register, watch, reset, control } = useForm<ToolNodeFormValues>({
     defaultValues: {
-      title: node.data?.title || "Appointment Scheduler",
-      description: node.data?.description || "",
-      status: node.data?.status || "inactive",
-      toolType: node.data?.toolType || "calendar",
-    }
+      title: toStringValue(node.data?.title, "Appointment Scheduler"),
+      description: toStringValue(node.data?.description),
+      status: toToolStatus(node.data?.status),
+      toolType: toToolType(node.data?.toolType),
+    },
   });
 
   useEffect(() => {
     reset({
-        title: node.data?.title || "Appointment Scheduler",
-        description: node.data?.description || "",
-        status: node.data?.status || "inactive",
-        toolType: node.data?.toolType || "calendar",
+      title: toStringValue(node.data?.title, "Appointment Scheduler"),
+      description: toStringValue(node.data?.description),
+      status: toToolStatus(node.data?.status),
+      toolType: toToolType(node.data?.toolType),
     });
-  }, [node.id, JSON.stringify(node.data), reset]);
+  }, [node.data, node.id, reset]);
   
   useEffect(() => {
     const subscription = watch((value) => {
@@ -167,7 +206,7 @@ export const ToolNodeForm = ({ node, onUpdate }: NodeFormProps) => {
         />
       </div>
       <div className="flex items-center space-x-2 pt-2">
-         <Controller
+      <Controller
           name="status"
           control={control}
           render={({ field }) => (
@@ -200,22 +239,28 @@ export const StartNodeForm = () => {
     );
 };
 
+type ConditionNodeFormValues = {
+  conditionType: ConditionType;
+  conditionValue: string;
+  description: string;
+};
+
 export const ConditionNodeForm = ({ node, onUpdate }: NodeFormProps) => {
-  const { register, watch, reset, control } = useForm({
+  const { register, watch, reset, control } = useForm<ConditionNodeFormValues>({
     defaultValues: {
-      conditionType: node.data?.conditionType || "keyword",
-      conditionValue: node.data?.conditionValue || "",
-      description: node.data?.description || "",
-    }
+      conditionType: toConditionType(node.data?.conditionType),
+      conditionValue: toStringValue(node.data?.conditionValue),
+      description: toStringValue(node.data?.description),
+    },
   });
 
   useEffect(() => {
     reset({
-      conditionType: node.data?.conditionType || "keyword",
-      conditionValue: node.data?.conditionValue || "",
-      description: node.data?.description || "",
+      conditionType: toConditionType(node.data?.conditionType),
+      conditionValue: toStringValue(node.data?.conditionValue),
+      description: toStringValue(node.data?.description),
     });
-  }, [node.id, JSON.stringify(node.data), reset]);
+  }, [node.data, node.id, reset]);
   
   useEffect(() => {
     const subscription = watch((value) => {
@@ -278,28 +323,37 @@ export const ConditionNodeForm = ({ node, onUpdate }: NodeFormProps) => {
   );
 };
 
+type ActionNodeFormValues = {
+  actionType: ActionType;
+  variableName?: string;
+  variableValue?: string;
+  template?: string;
+  tone?: string;
+  description?: string;
+};
+
 export const ActionNodeForm = ({ node, onUpdate }: NodeFormProps) => {
-  const { register, watch, reset, control } = useForm({
+  const { register, watch, reset, control } = useForm<ActionNodeFormValues>({
     defaultValues: {
-      actionType: node.data?.actionType || "set_variable",
-      variableName: node.data?.variableName || "",
-      variableValue: node.data?.variableValue || "",
-      template: node.data?.template || "",
-      tone: node.data?.tone || "",
-      description: node.data?.description || "",
-    }
+      actionType: toActionType(node.data?.actionType),
+      variableName: toStringValue(node.data?.variableName),
+      variableValue: toStringValue(node.data?.variableValue),
+      template: toStringValue(node.data?.template),
+      tone: toStringValue(node.data?.tone),
+      description: toStringValue(node.data?.description),
+    },
   });
 
   useEffect(() => {
     reset({
-      actionType: node.data?.actionType || "set_variable",
-      variableName: node.data?.variableName || "",
-      variableValue: node.data?.variableValue || "",
-      template: node.data?.template || "",
-      tone: node.data?.tone || "",
-      description: node.data?.description || "",
+      actionType: toActionType(node.data?.actionType),
+      variableName: toStringValue(node.data?.variableName),
+      variableValue: toStringValue(node.data?.variableValue),
+      template: toStringValue(node.data?.template),
+      tone: toStringValue(node.data?.tone),
+      description: toStringValue(node.data?.description),
     });
-  }, [node.id, JSON.stringify(node.data), reset]);
+  }, [node.data, node.id, reset]);
   
   useEffect(() => {
     const subscription = watch((value) => {

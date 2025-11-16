@@ -24,7 +24,7 @@ interface AgentSidePanelProps {
   profile: AgentProfileDraft;
   selectedNode?: AgentNode;
   onEditProfile?(): void;
-  onUpdateNode?(nodeId: string, data: any): void;
+  onUpdateNode?(nodeId: string, data: Record<string, unknown>): void;
   onDeleteNode?(nodeId: string): void;
 }
 
@@ -124,7 +124,7 @@ const GeneralInfoPanel = ({ profile, onEditProfile }: { profile: AgentProfileDra
   )
 }
 
-const NodeConfigPanel = ({ node, onUpdate, onDelete }: { node: AgentNode, onUpdate?: (id: string, data: any) => void, onDelete?: (id: string) => void }) => {
+const NodeConfigPanel = ({ node, onUpdate, onDelete }: { node: AgentNode; onUpdate?: (id: string, data: Record<string, unknown>) => void; onDelete?: (id: string) => void }) => {
   
   const renderForm = () => {
     if (!onUpdate) return null;
@@ -133,9 +133,9 @@ const NodeConfigPanel = ({ node, onUpdate, onDelete }: { node: AgentNode, onUpda
       case "start":
         return <StartNodeForm />;
       case "tone":
-        return <ToneNodeForm node={node} onUpdate={onUpdate} />;
+  return <ToneNodeForm node={node} onUpdate={onUpdate} />;
       case "behavior":
-        return <BehaviorNodeForm node={node} onUpdate={onUpdate} />;
+  return <BehaviorNodeForm node={node} onUpdate={onUpdate} />;
       case "prompt":
         return <PromptNodeForm node={node} onUpdate={onUpdate} />;
       case "tool":

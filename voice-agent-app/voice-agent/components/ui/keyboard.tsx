@@ -1,7 +1,7 @@
 import { Keyboard as KeyboardPrimitive } from "react-aria-components"
 import { twMerge } from "tailwind-merge"
 
-interface KeyboardProps extends React.ComponentProps<typeof KeyboardPrimitive> {}
+type KeyboardProps = React.ComponentProps<typeof KeyboardPrimitive>
 
 const Keyboard = ({ className, ...props }: KeyboardProps) => {
   return (

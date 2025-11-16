@@ -11,6 +11,7 @@ import {
   GitBranch,
   Zap,
   Plus,
+  type LucideIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -21,15 +22,17 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
-interface NodeType {
-  type: string;
+import type { AgentNode } from "@/lib/schemas/agent";
+
+interface NodeTypeDefinition {
+  type: AgentNode["type"];
   label: string;
-  icon: any;
+  icon: LucideIcon;
   description: string;
   color: string;
 }
 
-const nodeTypes: NodeType[] = [
+const nodeTypes: NodeTypeDefinition[] = [
   {
     type: "start",
     label: "Start",
@@ -89,7 +92,7 @@ const nodeTypes: NodeType[] = [
 ];
 
 interface NodePaletteProps {
-  onAddNode: (nodeType: string) => void;
+  onAddNode: (nodeType: AgentNode["type"]) => void;
 }
 
 export function NodePalette({ onAddNode }: NodePaletteProps) {

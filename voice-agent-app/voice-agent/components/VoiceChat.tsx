@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef, useCallback } from "react"
+import { Suspense, useState, useEffect, useRef, useCallback } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Play, Pause, Eraser, Settings2 } from "lucide-react"
 import { useRouter } from "next/navigation"
@@ -36,7 +36,7 @@ import { useAgentBuilderState } from "@/lib/agent-profiles"
 import { AudioProcessor, AudioPlayer } from "@/lib/audio-processor"
 import { useQueryClient } from "@tanstack/react-query"
 
-export function VoiceChat() {
+function VoiceChatContent() {
   const router = useRouter()
   const queryClient = useQueryClient()
   const [{ profileId }] = useAgentBuilderState()
@@ -610,5 +610,21 @@ export function VoiceChat() {
         </div>
       )}
     </div>
+  )
+}
+
+export function VoiceChat() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex h-[600px] w-full items-center justify-center">
+          <Card className="p-6 text-center text-sm text-muted-foreground">
+            Loading voice chat&hellip;
+          </Card>
+        </div>
+      }
+    >
+      <VoiceChatContent />
+    </Suspense>
   )
 }

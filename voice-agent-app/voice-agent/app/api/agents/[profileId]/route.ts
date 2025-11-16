@@ -3,11 +3,14 @@ import { agentProfileDraftSchema } from "@/lib/schemas/agent";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
+type RouteContext = { params: Promise<{ profileId: string }> };
+
 export async function GET(
   _request: NextRequest,
-  { params }: { params: { profileId: string } },
+  context: RouteContext,
 ) {
-  const res = await fetch(`${API_BASE}/api/agents/${params.profileId}`, {
+  const { profileId } = await context.params;
+  const res = await fetch(`${API_BASE}/api/agents/${profileId}`, {
     cache: "no-store",
   });
   if (!res.ok) {
@@ -22,11 +25,12 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { profileId: string } },
+  context: RouteContext,
 ) {
+  const { profileId } = await context.params;
   const body = await request.json();
   const parsed = agentProfileDraftSchema.parse(body);
-  const res = await fetch(`${API_BASE}/api/agents/${params.profileId}`, {
+  const res = await fetch(`${API_BASE}/api/agents/${profileId}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(parsed),
@@ -44,9 +48,10 @@ export async function PUT(
 
 export async function DELETE(
   _request: NextRequest,
-  { params }: { params: { profileId: string } },
+  context: RouteContext,
 ) {
-  const res = await fetch(`${API_BASE}/api/agents/${params.profileId}`, {
+  const { profileId } = await context.params;
+  const res = await fetch(`${API_BASE}/api/agents/${profileId}`, {
     method: "DELETE",
   });
   if (!res.ok) {

@@ -69,13 +69,13 @@ export const Message: React.FC<MessageProps> = ({
         </div>
         {timing && !isUser && (
           <div className="flex items-center gap-1.5 px-1 self-end">
-            <Badge variant="ghost" className="text-[10px] h-5 px-1.5">
+            <Badge variant="outline" className="text-[10px] h-5 px-1.5">
               LLM: {timing.llm_time}s
             </Badge>
-            <Badge variant="ghost" className="text-[10px] h-5 px-1.5">
+            <Badge variant="outline" className="text-[10px] h-5 px-1.5">
               TTS: {timing.tts_time}s
             </Badge>
-            <Badge variant="ghost" className="text-[10px] h-5 px-1.5">
+            <Badge variant="outline" className="text-[10px] h-5 px-1.5">
               Total: {timing.total_time}s
             </Badge>
           </div>

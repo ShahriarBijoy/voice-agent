@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { AgentBuilder, EmptyAgentState } from "@/components/agent-builder";
+import { AgentBuilder } from "@/components/agent-builder";
 import { AgentProfileDraft } from "@/lib/schemas/agent";
 
 function createDefaultDraft(): AgentProfileDraft {
@@ -33,6 +33,20 @@ function createDefaultDraft(): AgentProfileDraft {
 }
 
 export default function AgentsPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex h-full items-center justify-center">
+          <div className="text-muted-foreground">Loading agent...</div>
+        </div>
+      }
+    >
+      <AgentsPageContent />
+    </Suspense>
+  );
+}
+
+function AgentsPageContent() {
   const searchParams = useSearchParams();
   const profileId = searchParams.get("id");
   const [profile, setProfile] = useState<AgentProfileDraft | null>(null);

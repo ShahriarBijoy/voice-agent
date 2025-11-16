@@ -5,6 +5,18 @@ import * as PopoverPrimitive from "@radix-ui/react-popover"
 
 import { cn } from "@/lib/utils"
 
+export type PopoverContentProps = React.ComponentProps<typeof PopoverPrimitive.Content> & {
+  placement?: string
+  arrow?: React.ReactNode
+  offset?: number
+  crossOffset?: number
+  arrowBoundaryOffset?: number
+  triggerRef?: React.RefObject<Element>
+  isOpen?: boolean
+  onOpenChange?: (isOpen: boolean) => void
+  shouldFlip?: boolean
+}
+
 function Popover({
   ...props
 }: React.ComponentProps<typeof PopoverPrimitive.Root>) {
@@ -28,7 +40,7 @@ function PopoverContent({
   align = "center",
   sideOffset = 4,
   ...props
-}: React.ComponentProps<typeof PopoverPrimitive.Content>) {
+}: PopoverContentProps) {
   return (
     <PopoverPortal>
       <PopoverPrimitive.Content

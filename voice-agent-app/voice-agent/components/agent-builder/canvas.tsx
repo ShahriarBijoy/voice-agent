@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import "@xyflow/react/dist/style.css";
 import {
@@ -14,6 +14,8 @@ import {
   ReactFlowProvider,
   NodeChange,
   EdgeChange,
+  type Node,
+  type NodeTypes,
 } from "@xyflow/react";
 import { AnimatePresence, motion } from "framer-motion";
 import { LayoutGrid, RefreshCcw, Plus, Play, Save } from "lucide-react";
@@ -53,16 +55,22 @@ import {
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
-const nodeTypes = {
-  start: AgentStartNode as any,
-  tone: AgentToneNode as any,
-  behavior: AgentBehaviorNode as any,
-  prompt: AgentPromptNode as any,
-  tool: AgentToolNode as any,
-  summary: AgentSummaryNode as any,
-  condition: AgentConditionNode as any,
-  action: AgentActionNode as any,
+const nodeTypes: NodeTypes = {
+  start: AgentStartNode,
+  tone: AgentToneNode,
+  behavior: AgentBehaviorNode,
+  prompt: AgentPromptNode,
+  tool: AgentToolNode,
+  summary: AgentSummaryNode,
+  condition: AgentConditionNode,
+  action: AgentActionNode,
 };
+
+type FlowNode = Node;
+type FlowEdge = Edge;
+
+const toFlowNodes = (agentNodes: AgentNode[]): FlowNode[] => agentNodes as FlowNode[];
+const toFlowEdges = (agentEdges: AgentEdge[]): FlowEdge[] => agentEdges as FlowEdge[];
 
 interface AgentCanvasProps {
   profile: AgentProfileDraft;
@@ -181,7 +189,8 @@ export function AgentBuilderCanvas({
   const handleNodesChange = useCallback(
     (changes: NodeChange[]) => {
       setNodes((current) => {
-        const next = applyNodeChanges(changes, current as any) as AgentNode[];
+        const nextFlowNodes = applyNodeChanges(changes, toFlowNodes(current));
+        const next = nextFlowNodes as AgentNode[];
         // Defer onUpdate to avoid setState during render
         setTimeout(() => onUpdate({ nodes: next, edges }), 0);
         return next;
@@ -193,7 +202,8 @@ export function AgentBuilderCanvas({
   const handleEdgesChange = useCallback(
     (changes: EdgeChange[]) => {
       setEdges((current) => {
-        const next = applyEdgeChanges(changes, current);
+        const nextFlowEdges = applyEdgeChanges(changes, toFlowEdges(current));
+        const next = nextFlowEdges as AgentEdge[];
         // Defer onUpdate to avoid setState during render
         setTimeout(() => onUpdate({ nodes, edges: next }), 0);
         return next;
@@ -205,10 +215,11 @@ export function AgentBuilderCanvas({
   const handleConnect = useCallback(
     (connection: Connection) => {
       setEdges((current) => {
-        const next = addEdge(connection, current as Edge[]);
+        const nextFlowEdges = addEdge(connection, toFlowEdges(current));
+        const next = nextFlowEdges as AgentEdge[];
         // Defer onUpdate to avoid setState during render
-        setTimeout(() => onUpdate({ nodes, edges: next as AgentEdge[] }), 0);
-        return next as AgentEdge[];
+        setTimeout(() => onUpdate({ nodes, edges: next }), 0);
+        return next;
       });
     },
     [nodes, onUpdate],
@@ -368,8 +379,8 @@ export function AgentBuilderCanvas({
                 transition={{ duration: 0.2 }}
               >
                 <ReactFlow
-                  nodes={nodes as any}
-                  edges={edges as Edge[]}
+                  nodes={toFlowNodes(nodes)}
+                  edges={toFlowEdges(edges)}
                   onNodesChange={handleNodesChange}
                   onEdgesChange={handleEdgesChange}
                   onConnect={handleConnect}
@@ -392,4 +403,14 @@ export function AgentBuilderCanvas({
   );
 }
 
+function AgentBuilderCanvasWrapper(props: AgentCanvasProps) {
+  return <AgentBuilderCanvas {...props} />;
+}
 
+export default function AgentBuilderCanvasWithSuspense(props: AgentCanvasProps) {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center h-full"><div>Loading canvas...</div></div>}>
+      <AgentBuilderCanvasWrapper {...props} />
+    </Suspense>
+  );
+}
