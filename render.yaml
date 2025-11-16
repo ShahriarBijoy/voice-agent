@@ -15,13 +15,19 @@ services:
           type: web
           name: voice-agent-backend
           property: port
+      - key: HOST
+        value: 0.0.0.0
+      - key: CORS_ORIGINS
+        value: http://localhost:3006,https://voice-agent-frontend.onrender.com
+      - key: SONIOX_API_KEY
+        sync: false
       - key: OPENAI_API_KEY
         sync: false
-      - key: GROQ_API_KEY
+      - key: OPENAI_MODEL
+        value: gpt-4o
+      - key: VOGENT_API_KEY
         sync: false
-      - key: DEEPGRAM_API_KEY
-        sync: false
-      - key: HF_TOKEN
+      - key: VOGENT_VOICE_ID
         sync: false
     healthCheckPath: /health
     autoDeploy: true
