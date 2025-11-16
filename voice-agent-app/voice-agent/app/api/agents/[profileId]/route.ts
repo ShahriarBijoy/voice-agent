@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { agentProfileDraftSchema } from "@/lib/schemas/agent";
+import { API_URL } from "@/lib/config";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const API_BASE = API_URL;
 
 type RouteContext = { params: Promise<{ profileId: string }> };
 

@@ -22,7 +22,6 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-import { Badge } from "@/components/ui/badge"
 import { showSessionSavedToast } from "@/components/ui/session-saved-notification"
 import {
   Message as MessageType,
@@ -34,6 +33,7 @@ import {
 import { VoiceAgentWebSocket } from "@/lib/websocket-client"
 import { useAgentBuilderState } from "@/lib/agent-profiles"
 import { AudioProcessor, AudioPlayer } from "@/lib/audio-processor"
+import { WS_ENDPOINT } from "@/lib/config"
 import { useQueryClient } from "@tanstack/react-query"
 
 function VoiceChatContent() {
@@ -280,9 +280,8 @@ function VoiceChatContent() {
   const connect = async () => {
     try {
       console.log("[VoiceChat] Connecting to WebSocket...")
-      const wsUrl = process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:8000/ws"
       wsRef.current = new VoiceAgentWebSocket(
-        wsUrl,
+        WS_ENDPOINT,
         handleMessage,
         handleAudio,
         setConnectionState
