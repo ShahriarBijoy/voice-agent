@@ -22,6 +22,8 @@ app.add_middleware(
         "http://localhost:3006",
         "https://voice-agent-frontend.onrender.com",
         "https://voice-agent-backend.onrender.com",
+        "https://voice-agent-frontend-3xd6.onrender.com",
+        "https://voice-agent-backend-3v6s.onrender.com",
     ],
     allow_origin_regex=r"https://.*\.onrender\.com",
     allow_credentials=True,

@@ -18,7 +18,7 @@ services:
       - key: HOST
         value: 0.0.0.0
       - key: CORS_ORIGINS
-        value: http://localhost:3006,https://voice-agent-frontend.onrender.com
+        value: http://localhost:3006,https://voice-agent-frontend-3xd6.onrender.com
       - key: SONIOX_API_KEY
         sync: false
       - key: OPENAI_API_KEY
@@ -49,5 +49,5 @@ services:
           name: voice-agent-frontend
           property: port
       - key: NEXT_PUBLIC_API_URL
-        value: https://voice-agent-backend.onrender.com
+        value: https://voice-agent-backend-3v6s.onrender.com
     autoDeploy: true
